@@ -1,0 +1,9 @@
+{
+    "name": "acme/my-app",
+    "description": "My PHP Application",
+    "type": "project",
+    "license": "proprietary",
+    "require": {
+        "vlucas/phpdotenv": "^5.6"
+    }
+}
