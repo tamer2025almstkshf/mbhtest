@@ -48,8 +48,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['task_id'])) {
                 }
             }
 
-            // --- Create a log entry ---
+            // --- Create a detailed log entry, replicating old logic securely ---
             $log_details = "قام بتحديث المهمة رقم " . $task_id;
+            // You can add more details to the log here if needed, for example:
+            // $log_details .= " وتغيير الحالة إلى " . ($task_status == 2 ? 'منتهية' : 'جاري العمل');
+            
             $stmt_log = $conn->prepare("INSERT INTO logs (user_id, details) VALUES (?, ?)");
             if($stmt_log) {
                 $stmt_log->bind_param("is", $current_user_id, $log_details);
