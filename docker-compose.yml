@@ -5,8 +5,6 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: mbh_php_app
-    env_file:
-      - .env
     networks:
       - app-network
 
@@ -29,8 +27,6 @@ services:
     image: mysql:8.0
     container_name: mbh_mysql_db
     restart: unless-stopped
-    env_file:
-      - .env
     volumes:
       - db-data:/var/lib/mysql
     ports:
