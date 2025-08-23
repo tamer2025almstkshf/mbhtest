@@ -5,8 +5,13 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: mbh_php_app
+    environment:
+      DB_HOST: db
+      DB_USER: mbh
+      DB_PASS: '#yuCyTJ!FI=K'
+      DB_NAME: mbhdb
     volumes:
-      - ./:/var/www/html
+      - ./:/var/w.../html
     networks:
       - app-network
 
