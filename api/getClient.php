@@ -3,25 +3,29 @@ header('Content-Type: application/json');
 include_once '../connection.php';
 include_once '../login_check.php';
 
-$response = ['status' => 'error', 'message' => 'Invalid Request'];
+$response = ['status' => 'error', 'message' => 'Invalid request.'];
 
 if (isset($_GET['id'])) {
     $client_id = (int)$_GET['id'];
     
-    $stmt = $conn->prepare("SELECT * FROM client WHERE id = ?");
-    $stmt->bind_param("i", $client_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    
-    if ($client = $result->fetch_assoc()) {
-        $response['status'] = 'success';
-        $response['data'] = $client;
-        unset($response['message']);
+    $stmt = $conn->prepare("SELECT id, arname, engname, client_kind, client_type, country, tel1, tel2, email, fax, address FROM client WHERE id = ?");
+    if ($stmt) {
+        $stmt->bind_param("i", $client_id);
+        if ($stmt->execute()) {
+            $result = $stmt->get_result();
+            $client = $result->fetch_assoc();
+            if ($client) {
+                $response = ['status' => 'success', 'data' => $client];
+            } else {
+                $response['message'] = 'Client not found.';
+            }
+        } else {
+            $response['message'] = 'Database execute error.';
+        }
+        $stmt->close();
     } else {
-        $response['message'] = 'Client not found.';
+        $response['message'] = 'Database prepare error.';
     }
-    $stmt->close();
 }
 
-$conn->close();
 echo json_encode($response);
