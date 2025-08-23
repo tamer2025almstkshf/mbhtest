@@ -11,7 +11,6 @@ services:
       DB_PASSWORD: '#yuCyTJ!FI=K'
     networks:
       - app-network
-
   nginx:
     build:
       context: ./docker/nginx
@@ -25,7 +24,6 @@ services:
       - app
     networks:
       - app-network
-
   db:
     image: mysql:8.0
     container_name: mbh_mysql_db
@@ -41,11 +39,9 @@ services:
       - "3306:3306"
     networks:
       - app-network
-
 networks:
   app-network:
     driver: bridge
-
 volumes:
   db-data:
     driver: local
