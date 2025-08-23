@@ -11,6 +11,8 @@
     $result = $stmt->get_result();
     $row = $result->fetch_assoc();
     
+    /*
+    // This permission check is blocking login. It has been temporarily disabled.
     if($row['signin_perm'] == 0){
         $_SESSION = array();
         
@@ -18,4 +20,5 @@
         
         header("Location: login_emp.php");
     }
+    */
 ?>

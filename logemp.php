@@ -15,7 +15,7 @@
         if($result->num_rows > 0){
             $row = mysqli_fetch_array($result);
             $dbpassword = $row['password'];
-            include_once 'AES256.php';
+            require_once 'AES256.php';
             $decrypted_password = openssl_decrypt($dbpassword, $cipher, $key, $options, $iv);
             if($decrypted_password === $password){
                 session_start();
