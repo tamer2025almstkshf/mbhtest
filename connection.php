@@ -1,30 +1,33 @@
 <?php
-// Load Composer's autoloader, which is essential for modern PHP
+// Load Composer's autoloader, which is essential for modern PHP and loading packages.
 require_once __DIR__ . '/vendor/autoload.php';
 
-// Load the .env file
+// Load the .env file from the project root.
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
-// Set the default timezone
+// Set the application's default timezone.
 date_default_timezone_set('Asia/Dubai');
 
-// Read database credentials from environment variables (from .env file)
-// This is the key change: DB_HOST will be 'db', not 'localhost'
-$servername = getenv('DB_HOST');
-$username = getenv('DB_USER');
-$password = getenv('DB_PASS');
-$dbname = getenv('DB_NAME');
+// Read all database credentials from the secure .env file.
+$servername = getenv('DB_HOST'); // This will correctly be 'db' for the Docker container.
+$username   = getenv('DB_USER');
+$password   = getenv('DB_PASS');
+$dbname     = getenv('DB_NAME');
 
-// Create the database connection
+// Create the one and only database connection object.
 $conn = new mysqli($servername, $username, $password, $dbname);
+
+// Check for connection errors and stop execution if it fails.
 if($conn->connect_error){
-    // In a production app, you should log this error instead of showing it
-    die('Database connection error: ' . $conn->connect_error);
+    // In production, this should be logged to a file, not shown to the user.
+    die('Database Connection Error: ' . $conn->connect_error);
 }
+
+// Set the character set to handle Arabic text correctly.
 $conn->set_charset("utf8mb4");
 
-// Security headers
+// Standard security headers to help protect against common web vulnerabilities.
 header("X-XSS-Protection: 1; mode=block");
 header("X-Content-Type-Options: nosniff");
 header("X-Frame-Options: SAMEORIGIN");
