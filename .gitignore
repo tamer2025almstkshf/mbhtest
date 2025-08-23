@@ -1,5 +1,18 @@
-# Ignore environment variables
+# PHP Composer dependencies
+/vendor/
+
+# Environment variables
 .env
 
-# Ignore Composer dependencies
-/vendor/
+# PHP error log
+error_log
+
+# Docker-specific files
+/.dockerignore
+
+# IDE-specific files (e.g., VS Code)
+.vscode/
+
+# OS generated files
+.DS_Store
+thumbs.db
