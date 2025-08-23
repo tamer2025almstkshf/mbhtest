@@ -9,6 +9,58 @@ services:
       DB_HOST: db
       DB_DATABASE: mbhdbase
       DB_USERNAME: mbhDev
+      DB_PASSWORD: '#yuCyTJ!FI=K' # Password now in quotes
+    networks:
+      - app-network
+
+  nginx:
+    build:
+      context: ./docker/nginx
+      dockerfile: Dockerfile
+    container_name: mbh_nginx_server
+    ports:
+      - "80:80"
+    volumes:
+      - ./public:/var/www/html/public:ro
+    depends_on:
+      - app
+    networks:
+      - app-network
+
+  db:
+    image: mysql:8.0
+    container_name: mbh_mysql_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: 'very_secure_root_password_123' # Password now in quotes
+      MYSQL_DATABASE: mbhdbase
+      MYSQL_USER: mbhDev
+      MYSQL_PASSWORD: '#yuCyTJ!FI=K' # Password now in quotes
+    volumes:
+      - db-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  db-data:
+    driver: local
+version: '3.8'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mbh_php_app
+    environment:
+      DB_HOST: db
+      DB_DATABASE: mbhdbase
+      DB_USERNAME: mbhDev
       DB_PASSWORD: #yuCyTJ!FI=K
     networks:
       - app-network
