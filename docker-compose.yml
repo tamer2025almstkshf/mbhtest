@@ -5,13 +5,11 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: mbh_php_app
-    environment:
-      DB_HOST: db
-      DB_USER: mbh
-      DB_PASS: '#yuCyTJ!FI=K'
-      DB_NAME: mbhdb
-    volumes:
-      - ${PWD}:/var/www/html # Changed to absolute path
+    env_file:
+      - .env
+    # In production, we build the image with the code, so no need for volume mounts
+    # volumes:
+    #   - ${PWD}:/var/www/html
     networks:
       - app-network
 
@@ -19,10 +17,11 @@ services:
     image: nginx:1.21-alpine
     container_name: mbh_nginx_server
     ports:
-      - "8080:80"
+      - "80:80" # Changed to standard HTTP port
     volumes:
-      - ${PWD}:/var/www/html # Changed to absolute path
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      # Mount the application code as a volume for Nginx to serve static assets and proxy to PHP-FPM
+      - ./public:/var/www/html/public:ro # Assuming 'public' is your web root for Nginx
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       - app
     networks:
@@ -32,15 +31,12 @@ services:
     image: mysql:8.0
     container_name: mbh_mysql_db
     restart: unless-stopped
-    environment:
-      MYSQL_DATABASE: mbhdb
-      MYSQL_ROOT_PASSWORD: your_strong_root_password
-      MYSQL_PASSWORD: '#yuCyTJ!FI=K'
-      MYSQL_USER: mbh
+    env_file:
+      - .env
     volumes:
       - db-data:/var/lib/mysql
     ports:
-      - "3306:3306" # Expose MySQL port to host
+      - "3306:3306"
     networks:
       - app-network
 
