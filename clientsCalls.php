@@ -1,6 +1,5 @@
 <?php
 $pageTitle = 'سجل المكالمات الهاتفية';
-include_once 'connection.php';
 include_once 'login_check.php';
 include_once 'permissions_check.php';
 include_once 'safe_output.php';
@@ -102,30 +101,33 @@ if ($admin != 1 && $current_branch !== $user_branch) {
                                     <td><?php echo safe_output($row['action']); ?></td>
                                     <td>
                                         <?php
-                                        $moved_to_id = $row['moved_to'];
-                                        $stmt_user = $conn->prepare("SELECT name FROM user WHERE id=?");
-                                        $stmt_user->bind_param("i", $moved_to_id);
-                                        $stmt_user->execute();
-                                        $result_user = $stmt_user->get_result();
-                                        if ($row_user = $result_user->fetch_assoc()) {
-                                            echo safe_output($row_user['name']);
+                                        if (!empty($row['moved_to'])) {
+                                            $moved_to_id = $row['moved_to'];
+                                            $stmt_user = $conn->prepare("SELECT name FROM user WHERE id=?");
+                                            $stmt_user->bind_param("i", $moved_to_id);
+                                            $stmt_user->execute();
+                                            $result_user = $stmt_user->get_result();
+                                            if ($row_user = $result_user->fetch_assoc()) {
+                                                echo safe_output($row_user['name']);
+                                            }
+                                            $stmt_user->close();
                                         }
-                                        $stmt_user->close();
                                         ?>
                                     </td>
                                     <td>
                                         <?php 
-                                        // Assuming timestamp format is "userid <br> YYYY-MM-DD"
-                                        list($user_id, $date) = explode(" <br> ", $row['timestamp']);
-                                        $stmt_creator = $conn->prepare("SELECT name FROM user WHERE id=?");
-                                        $stmt_creator->bind_param("i", $user_id);
-                                        $stmt_creator->execute();
-                                        $result_creator = $stmt_creator->get_result();
-                                        if ($row_creator = $result_creator->fetch_assoc()) {
-                                            echo safe_output($row_creator['name']);
+                                        if (!empty($row['timestamp'])) {
+                                            list($user_id, $date) = explode(" <br> ", $row['timestamp']);
+                                            $stmt_creator = $conn->prepare("SELECT name FROM user WHERE id=?");
+                                            $stmt_creator->bind_param("i", $user_id);
+                                            $stmt_creator->execute();
+                                            $result_creator = $stmt_creator->get_result();
+                                            if ($row_creator = $result_creator->fetch_assoc()) {
+                                                echo safe_output($row_creator['name']);
+                                            }
+                                            $stmt_creator->close();
+                                            echo "<br><small class='text-muted'>$date</small>";
                                         }
-                                        $stmt_creator->close();
-                                        echo "<br><small class='text-muted'>$date</small>";
                                         ?>
                                     </td>
                                     <td>
@@ -151,4 +153,4 @@ if ($admin != 1 && $current_branch !== $user_branch) {
     </div>
 </div>
 
-<?php include_once 'layout/footer.php'; // Use modern footer ?>
+<?php include_once 'layout/footer.php'; ?>

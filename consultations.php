@@ -1,6 +1,5 @@
 <?php
 $pageTitle = 'الاستشارات القانونية';
-include_once 'connection.php';
 include_once 'login_check.php';
 include_once 'safe_output.php';
 include_once 'permissions_check.php';

@@ -1,9 +1,8 @@
 <?php
 $pageTitle = 'الفواتير';
-include_once 'connection.php';
 include_once 'login_check.php';
 include_once 'permissions_check.php';
-include_once 'layout/header.php';
+include_once 'layout/header.php'; // Handles connection
 
 // Assuming a general finance permission. Adjust if you have a specific one for invoices.
 if ($row_permcheck['accfinance_rperm'] != 1) {

@@ -1,6 +1,5 @@
 <?php
 // Core Includes & Setup
-include_once 'connection.php';
 include_once 'login_check.php';
 include_once 'permissions_check.php';
 include_once 'safe_output.php';
@@ -10,7 +9,7 @@ include_once 'AES256.php';
 use App\Helpers\SalaryHelper;
 
 $pageTitle = 'شؤون الموظفين';
-include_once 'layout/header.php'; // Modern header
+include_once 'layout/header.php'; // Modern header - THIS HANDLES THE CONNECTION
 
 // You should have a central sidebar include if it's on many pages
 // include_once 'sidebar.php'; 
