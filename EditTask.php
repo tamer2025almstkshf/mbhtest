@@ -77,17 +77,30 @@ if (!$task) {
                 </div>
                 
                 <div class="row">
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-4 mb-3">
                         <label for="duedate" class="form-label">تاريخ التنفيذ</label>
                         <input type="date" id="duedate" name="duedate" class="form-control" value="<?php echo htmlspecialchars($task['duedate']); ?>">
                     </div>
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-4 mb-3">
                         <label for="priority" class="form-label">الأهمية</label>
                         <select id="priority" name="priority" class="form-select">
                             <option value="0" <?php echo ($task['priority'] == '0') ? 'selected' : ''; ?>>عادي</option>
                             <option value="1" <?php echo ($task['priority'] == '1') ? 'selected' : ''; ?>>عاجل</option>
                         </select>
                     </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="task_status" class="form-label">حالة المهمة</label>
+                        <select id="task_status" name="task_status" class="form-select">
+                            <option value="0" <?php echo ($task['task_status'] == '0') ? 'selected' : ''; ?>>لم يبدأ</option>
+                            <option value="1" <?php echo ($task['task_status'] == '1') ? 'selected' : ''; ?>>جاري العمل</option>
+                            <option value="2" <?php echo ($task['task_status'] == '2') ? 'selected' : ''; ?>>منتهية</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="note" class="form-label">إضافة ملاحظة</label>
+                    <textarea id="note" name="note" class="form-control" rows="2" placeholder="إضافة ملاحظة عند تحديث الحالة..."></textarea>
                 </div>
 
                 <div class="text-end">
