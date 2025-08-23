@@ -1,0 +1,1 @@
+<?php\n\nuse PHPUnit\\Framework\\TestCase;\n\nclass EndToEndTest extends TestCase\n{\n    public function testTrueIsTrue()\n    {\n        \$this->assertTrue(true);\n    }\n}

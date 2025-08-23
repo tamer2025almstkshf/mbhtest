@@ -11,7 +11,7 @@ services:
       DB_PASS: '#yuCyTJ!FI=K'
       DB_NAME: mbhdb
     volumes:
-      - ./:/var/w.../html
+      - ${PWD}:/var/www/html # Changed to absolute path
     networks:
       - app-network
 
@@ -21,7 +21,7 @@ services:
     ports:
       - "8080:80"
     volumes:
-      - ./:/var/www/html
+      - ${PWD}:/var/www/html # Changed to absolute path
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - app
@@ -39,6 +39,8 @@ services:
       MYSQL_USER: mbh
     volumes:
       - db-data:/var/lib/mysql
+    ports:
+      - "3306:3306" # Expose MySQL port to host
     networks:
       - app-network
 
