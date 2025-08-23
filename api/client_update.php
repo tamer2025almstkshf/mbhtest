@@ -3,17 +3,17 @@ header('Content-Type: application/json');
 include_once '../connection.php';
 include_once '../login_check.php';
 include_once '../permissions_check.php';
-include_once '../AES256.php';
 
 $response = ['status' => 'error', 'message' => 'An unknown error occurred.'];
 
-if ($row_permcheck['clients_aperm'] != 1) {
+if ($row_permcheck['clients_eperm'] != 1) {
     $response['message'] = 'Permission denied.';
     echo json_encode($response);
     exit();
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['client_id'])) {
+    $client_id = (int)$_POST['client_id'];
     $arname = trim($_POST['arname']);
     $tel1 = trim($_POST['tel1']);
     
@@ -31,18 +31,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email']);
     $fax = trim($_POST['fax']);
     $address = trim($_POST['address']);
-    
-    $password = bin2hex(random_bytes(8));
-    $encrypted_password = openssl_encrypt($password, $cipher, $key, $options, $iv);
 
-    $sql = "INSERT INTO client (arname, engname, client_kind, client_type, country, tel1, tel2, email, fax, address, password, perm) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)";
+    $sql = "UPDATE client SET arname = ?, engname = ?, client_kind = ?, client_type = ?, country = ?, tel1 = ?, tel2 = ?, email = ?, fax = ?, address = ? WHERE id = ?";
     $stmt = $conn->prepare($sql);
 
     if ($stmt) {
-        $stmt->bind_param("sssssssssss", $arname, $engname, $client_kind, $client_type, $country, $tel1, $tel2, $email, $fax, $address, $encrypted_password);
+        $stmt->bind_param("ssssssssssi", $arname, $engname, $client_kind, $client_type, $country, $tel1, $tel2, $email, $fax, $address, $client_id);
         if ($stmt->execute()) {
             $response['status'] = 'success';
-            $response['message'] = 'Client added successfully!';
+            $response['message'] = 'Client updated successfully!';
         } else {
             $response['message'] = 'Database error: ' . $stmt->error;
         }
