@@ -1,168 +1,218 @@
 <?php
-    include_once 'connection.php';
-    include_once 'login_check.php';
-    include_once 'safe_output.php';
-    
-    $month = $_GET['month'] ?? date('m');
-    $year = $_GET['year'] ?? date('Y');
-    
-    $firstDay = mktime(0, 0, 0, $month, 1, $year);
-    $daysInMonth = date('t', $firstDay);
-    
-    $arabicMonths = [
-        'January' => 'يناير',
-        'February' => 'فبراير',
-        'March' => 'مارس',
-        'April' => 'أبريل',
-        'May' => 'مايو',
-        'June' => 'يونيو',
-        'July' => 'يوليو',
-        'August' => 'أغسطس',
-        'September' => 'سبتمبر',
-        'October' => 'أكتوبر',
-        'November' => 'نوفمبر',
-        'December' => 'ديسمبر',
-    ];
+// FILE: Calendar.php
 
-    $monthNameEn = date('F', $firstDay);
-    $monthName = $arabicMonths[$monthNameEn];
-    $startDayOfWeek = date('w', $firstDay);
-    
-    $events = [];
-    $stmt = $conn->prepare("SELECT * FROM hr_events WHERE MONTH(event_date) = ? AND YEAR(event_date) = ?");
-    $stmt->bind_param("ss", $month, $year);
-    $stmt->execute();
-    $result= $stmt->get_result();
-    while ($row = $result->fetch_assoc()) {
-        $title = '';
-        $time = '';
-        if(isset($row['title']) && $row['title'] !== ''){
-            $title = $row['title'];
-            $title = "$title";
-        }
-        if(isset($row['time']) && $row['time'] !== '' && $row['time'] !== '00:00'){
-            $time = $row['time'];
-            $time = "<br><br><font style='color: gray'>@</font>$time";
-        }
-        $empid = $row['empid'];
-        $stmtempname = $conn->prepare("SELECT name FROM user WHERE id=?");
-        $stmtempname->bind_param("i", $empid);
-        $stmtempname->execute();
-        $resultempname = $stmtempname->get_result();
-        $rowempname = $resultempname->fetch_assoc();
-        $empname = $rowempname['name'];
-        
-        $by = " $empname";
-        $events[$row['event_date']][] = $title . $time . $by;
+/**
+ * Displays a monthly calendar with events for HR.
+ * Allows users to navigate between months and add new events.
+ *
+ * GET Params:
+ * - month: The month to display (e.g., '01' for January). Defaults to the current month.
+ * - year: The year to display (e.g., '2024'). Defaults to the current year.
+ */
+
+// 1. INCLUDES & BOOTSTRAPPING
+// =============================================================================
+include_once 'connection.php';
+include_once 'login_check.php';
+include_once 'safe_output.php';
+
+// 2. INITIALIZATION & DATE LOGIC
+// =============================================================================
+$currentMonth = isset($_GET['month']) ? (int)$_GET['month'] : date('m');
+$currentYear = isset($_GET['year']) ? (int)$_GET['year'] : date('Y');
+
+// Validate month and year to prevent errors
+if ($currentMonth < 1 || $currentMonth > 12) {
+    $currentMonth = date('m');
+}
+if ($currentYear < 1970 || $currentYear > 2100) {
+    $currentYear = date('Y');
+}
+
+$firstDayTimestamp = mktime(0, 0, 0, $currentMonth, 1, $currentYear);
+$daysInMonth = date('t', $firstDayTimestamp);
+$startDayOfWeek = date('w', $firstDayTimestamp); // 0 (Sun) to 6 (Sat)
+
+$arabicMonths = [
+    'January' => 'يناير', 'February' => 'فبراير', 'March' => 'مارس',
+    'April' => 'أبريل', 'May' => 'مايو', 'June' => 'يونيو',
+    'July' => 'يوليو', 'August' => 'أغسطس', 'September' => 'سبتمبر',
+    'October' => 'أكتوبر', 'November' => 'نوفمبر', 'December' => 'ديسمبر',
+];
+$monthNameEn = date('F', $firstDayTimestamp);
+$monthNameAr = $arabicMonths[$monthNameEn];
+$dayNamesAr = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+
+// 3. FETCH EVENTS FROM DATABASE
+// =============================================================================
+$events = [];
+// Prepare a statement to fetch events and the creator's name in a single query for efficiency.
+$sql = "
+    SELECT 
+        e.event_date, e.title, e.time, u.name as employee_name
+    FROM 
+        hr_events e
+    LEFT JOIN 
+        user u ON e.empid = u.id
+    WHERE 
+        MONTH(e.event_date) = ? AND YEAR(e.event_date) = ?
+    ORDER BY 
+        e.time ASC
+";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("ii", $currentMonth, $currentYear);
+$stmt->execute();
+$result = $stmt->get_result();
+
+while ($row = $result->fetch_assoc()) {
+    $eventDetails = [];
+    if (!empty($row['title'])) {
+        $eventDetails[] = htmlspecialchars($row['title']);
     }
+    if (!empty($row['time']) && $row['time'] !== '00:00:00') {
+        // Format time to HH:MM AM/PM
+        $eventDetails[] = '<span class="event-time">@ ' . date("g:i A", strtotime($row['time'])) . '</span>';
+    }
+    if (!empty($row['employee_name'])) {
+         $eventDetails[] = '<span class="event-creator">بواسطة: ' . htmlspecialchars($row['employee_name']) . '</span>';
+    }
+    // Group events by date
+    $events[$row['event_date']][] = implode('<br>', $eventDetails);
+}
+$stmt->close();
 ?>
 <!DOCTYPE html>
-<html dir="rtl">
-    <head>
-        <title>محمد بني هاشم للمحاماة و الاستشارات القانونية</title>
-        <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-        <meta name="google-site-verification" content="_xmqQ0kTuDS9ta1v4E4je5rweWQ4qtH1l8_cnWro7Tk" />
-        <meta name="robots" content="noindex, nofollow">
-        <meta name="googlebot" content="noindex">
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-        <link rel="shortcut icon" href="files/images/instance/favicon.ico?v=35265" type="image/icon">
-        <link href="css/styles.css" rel="stylesheet">
-        <link rel="stylesheet" href="css/calendar_style.css">
-        <link rel="SHORTCUT ICON" href="img/favicon.ico">
-    </head>
-    <body style="overflow: auto; padding-bottom: 50px;">
-        <div class="container">
-            <?php include_once 'sidebar.php';?>
-            <div class="website">
-                <?php include_once 'header.php';?>
-                <div class="web-page">
-                    <br><br>
-                    <div class="calendar-container">
-                        <div class="calendar-header">
-                            <button onclick="navigateMonth(-1)">▶</button>
-                            <h2><?= "$monthName $year" ?></h2>
-                            <button onclick="navigateMonth(1)">◀</button>
-                        </div>
-                        
-                        <div class="calendar-grid">
-                            <?php
-                                $dayNames = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
-                                foreach ($dayNames as $dayName) echo "<div class='day-header' style='background-color: #125483; color: #fff'>".safe_output($dayName)."</div>";
-                                
-                                for ($i = 0; $i < $startDayOfWeek; $i++) echo "<div class='day-box empty'></div>";
-                                
-                                for ($day = 1; $day <= $daysInMonth; $day++) {
-                                    $dateKey = sprintf('%04d-%02d-%02d', $year, $month, $day);
-                                    echo "<div class='day-box' onclick='openModal(\"".safe_output($dateKey)."\")'>";
-                                    echo "<div class='day-number'>".safe_output($day)."</div>";
-                                    if (isset($events[$dateKey])) {
-                                        echo "<div class='event'>";
-                                        foreach ($events[$dateKey] as $event) {
-                                            echo "<div class='event-item'>" . safe_output($event) . "</div>";
-                                        }
-                                        echo "</div>";
-                                    }
-                                    echo "</div>";
-                                }
-                            ?>
-                        </div>
-                    </div>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقويم الموارد البشرية - <?php echo "$monthNameAr $currentYear"; ?></title>
+    
+    <!-- Dependencies -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    
+    <!-- Local CSS -->
+    <link href="css/styles.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/calendar_style.css">
+    <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
+</head>
+<body style="overflow: auto; padding-bottom: 50px;">
+    <div class="container">
+        <?php include_once 'sidebar.php'; ?>
+        <div class="website">
+            <?php include_once 'header.php'; ?>
+            <main class="web-page">
+                <div class="calendar-container">
+                    <header class="calendar-header">
+                        <button onclick="navigateMonth(1)" title="الشهر التالي">◀</button>
+                        <h2><?php echo "$monthNameAr $currentYear"; ?></h2>
+                        <button onclick="navigateMonth(-1)" title="الشهر السابق">▶</button>
+                    </header>
                     
-                    <div id="eventModal" class="modal2">
-                        <br><br>
-                        <div class="modal-content2">
-                            <div style="display: grid; grid-template-columns: 1fr auto; background-color: #125483; color: #fff; padding: 5px; border-radius: 3px;">
-                                <h3 style="">اضافة مراجعة خارجية</h3>
-                                <span class="close2" onclick="closeModal()">&times;</span>
+                    <div class="calendar-grid">
+                        <?php foreach ($dayNamesAr as $dayName) : ?>
+                            <div class="day-header"><?php echo $dayName; ?></div>
+                        <?php endforeach; ?>
+                        
+                        <?php for ($i = 0; $i < $startDayOfWeek; $i++) : ?>
+                            <div class="day-box empty"></div>
+                        <?php endfor; ?>
+                        
+                        <?php for ($day = 1; $day <= $daysInMonth; $day++) : 
+                            $dateKey = sprintf('%04d-%02d-%02d', $currentYear, $currentMonth, $day);
+                        ?>
+                            <div class="day-box" onclick='openModal("<?php echo $dateKey; ?>")' title="إضافة حدث لـ <?php echo $day; ?>/<?php echo $currentMonth; ?>">
+                                <div class="day-number"><?php echo $day; ?></div>
+                                <?php if (isset($events[$dateKey])) : ?>
+                                    <div class="event-container">
+                                        <?php foreach ($events[$dateKey] as $event) : ?>
+                                            <div class="event-item"><?php echo $event; ?></div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                <?php endif; ?>
                             </div>
-                            <form action="save_hrevent.php" method="POST">
-                                <input type="hidden" name="event_date" id="event_date">
-                                <textarea class="form-input2" style="width: 95%" name="title" placeholder="التفاصيل" required></textarea>
-                                <input type="number" class="form-input2" min="0" max="59"name="timeMM" style="width: 50px" placeholder="MM" required> : <input type="number" class="form-input2" min="0" max="23" name="timeHH" style="width: 50px" placeholder="HH" required>
-                                <br>
-                                <button type="submit">حفظ</button>
-                            </form>
-                        </div>
+                        <?php endfor; ?>
                     </div>
                 </div>
-            </div>
+
+                <!-- Event Modal -->
+                <div id="eventModal" class="modal2" style="display:none;">
+                    <div class="modal-content2">
+                        <header class="modal-header" style="display: flex; justify-content: space-between; align-items: center; background-color: #125483; color: #fff; padding: 10px; border-radius: 3px 3px 0 0;">
+                            <h3>إضافة مراجعة خارجية</h3>
+                            <span class="close2" onclick="closeModal()" title="إغلاق">&times;</span>
+                        </header>
+                        <form id="eventForm" action="save_hrevent.php" method="POST" style="padding: 15px;">
+                            <input type="hidden" name="event_date" id="event_date">
+                            
+                            <label for="title">التفاصيل:</label>
+                            <textarea id="title" class="form-input2" name="title" required></textarea>
+                            
+                            <label for="timeHH">الوقت:</label>
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <input type="number" id="timeHH" class="form-input2" min="0" max="23" name="timeHH" style="width: 60px" placeholder="HH" required>
+                                <span>:</span>
+                                <input type="number" class="form-input2" min="0" max="59" name="timeMM" style="width: 60px" placeholder="MM" required>
+                            </div>
+
+                            <button type="submit" class="blue-button" style="margin-top: 15px;">حفظ</button>
+                        </form>
+                    </div>
+                </div>
+            </main>
         </div>
-        
-        <script>
-            function navigateMonth(offset) {
-                const currentMonth = <?= (int)$month ?>;
-                const currentYear = <?= (int)$year ?>;
-                let newMonth = currentMonth + offset;
-                let newYear = currentYear;
-                
-                if (newMonth < 1) { newMonth = 12; newYear--; }
-                if (newMonth > 12) { newMonth = 1; newYear++; }
-                
-                window.location.href = `?month=${newMonth}&year=${newYear}`;
+    </div>
+    
+    <script>
+        /**
+         * Navigates to the previous or next month.
+         * @param {number} offset - 1 for next month, -1 for previous month.
+         */
+        function navigateMonth(offset) {
+            const currentMonth = <?php echo $currentMonth; ?>;
+            const currentYear = <?php echo $currentYear; ?>;
+            let newMonth = currentMonth + offset;
+            let newYear = currentYear;
+
+            if (newMonth < 1) {
+                newMonth = 12;
+                newYear--;
+            } else if (newMonth > 12) {
+                newMonth = 1;
+                newYear++;
             }
             
-            function openModal(date) {
-                document.getElementById('event_date').value = date;
-                document.getElementById('eventModal').style.display = 'block';
+            window.location.href = `?month=${newMonth}&year=${newYear}`;
+        }
+
+        /**
+         * Opens the event modal and sets the date.
+         * @param {string} date - The selected date in 'YYYY-MM-DD' format.
+         */
+        function openModal(date) {
+            document.getElementById('event_date').value = date;
+            document.getElementById('eventModal').style.display = 'block';
+            document.getElementById('title').focus(); // Focus on the first input
+        }
+
+        /**
+         * Closes the event modal.
+         */
+        function closeModal() {
+            document.getElementById('eventModal').style.display = 'none';
+        }
+
+        // Close modal if user clicks outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById('eventModal');
+            if (event.target == modal) {
+                closeModal();
             }
-            
-            function closeModal() {
-                document.getElementById('eventModal').style.display = 'none';
-            }
-        </script>
-        <script src="js/newWindow.js"></script>
-        <script src="js/translate.js"></script>
-        <script src="js/toggleSection.js"></script>
-        <script src="js/dropfiles.js"></script>
-        <script src="js/popups.js"></script>
-        <script src="js/randomPassGenerator.js"></script>
-        <script src="js/sweetAlerts.js"></script>
-        <script src="js/sweetAlerts2.js"></script>
-        <script src="js/tablePages.js"></script>
-        <script src="js/checkAll.js"></script>
-        <script src="js/dropdown.js"></script>
-    </body>
+        }
+    </script>
+    
+</body>
 </html>

@@ -1,135 +1,176 @@
 <?php
-    include_once 'connection.php';
-    include_once 'login_check.php';
-    include_once 'golden_pass.php';
-    include_once 'permissions_check.php';
-    include_once 'safe_output.php';
+// FILE: Fees.php
+
+/**
+ * This page allows users to manage the fee agreement stages (levels) for a specific case file.
+ *
+ * GET Params:
+ * - id: The File ID (required, integer).
+ */
+
+// 1. INCLUDES & BOOTSTRAPPING
+// =============================================================================
+include_once 'connection.php';
+include_once 'login_check.php';
+include_once 'permissions_check.php';
+include_once 'safe_output.php';
+include_once 'golden_pass.php';
+
+// 2. PERMISSIONS & INPUT VALIDATION
+// =============================================================================
+
+// Check if the user has permission to edit levels.
+if ($row_permcheck['levels_eperm'] != 1) {
+    http_response_code(403);
+    die('Access Denied: You do not have permission to perform this action.');
+}
+
+// Validate and sanitize the file ID from the GET request.
+$fileId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+if ($fileId <= 0) {
+    http_response_code(400);
+    die('Invalid File ID provided.');
+}
+
+// 3. DATA FETCHING & PROCESSING
+// =============================================================================
+
+// Fetch file details for security checks and to get current levels.
+$stmt = $conn->prepare("SELECT secret_folder, secret_emps, file_levels FROM file WHERE file_id = ?");
+$stmt->bind_param("i", $fileId);
+$stmt->execute();
+$result = $stmt->get_result();
+$fileDetails = $result->fetch_assoc();
+$stmt->close();
+
+if (!$fileDetails) {
+    http_response_code(404);
+    die('File not found.');
+}
+
+// Security Check: Verify access to secret folders.
+if ($admin != 1 && $fileDetails['secret_folder'] == 1) {
+    $allowedUserIds = array_filter(array_map('trim', explode(',', $fileDetails['secret_emps'])));
+    if (!in_array($_SESSION['id'], $allowedUserIds, true)) {
+        http_response_code(403);
+        die('Access to this secret file is restricted.');
+    }
+}
+
+// Get the currently selected levels for this file.
+$selectedLevels = array_map('trim', explode(',', $fileDetails['file_levels']));
+
+// Fetch all available levels from the database.
+$allLevels = [];
+$stmt = $conn->prepare("SELECT id, level_name FROM levels ORDER BY level_name ASC");
+$stmt->execute();
+$result = $stmt->get_result();
+while ($row = $result->fetch_assoc()) {
+    $allLevels[] = $row;
+}
+$stmt->close();
+
 ?>
 <!DOCTYPE html>
-<html dir="rtl">
-    <head>
-        <title>محمد بني هاشم للمحاماة و الاستشارات القانونية</title>
-        <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-        <meta name="google-site-verification" content="_xmqQ0kTuDS9ta1v4E4je5rweWQ4qtH1l8_cnWro7Tk" />
-        <meta name="robots" content="noindex, nofollow">
-        <meta name="googlebot" content="noindex">
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-        <link rel="shortcut icon" href="files/images/instance/favicon.ico?v=35265" type="image/icon">
-        <link href="https://mbhtest.com/css/styles.css" rel="stylesheet">
-        <link rel="SHORTCUT ICON" href="img/favicon.ico">
-        <meta http-equiv="Content-Type" content="text/html; charset=windows-1256" />
-    </head>
-    <body>
-        <?php if($row_permcheck['levels_eperm'] == 1){?>
-        <br>
-        <?php 
-            if(isset($_GET['id']) && $_GET['id'] !== ''){
-                $id = $_GET['id'];
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مراحل الاتفاقية</title>
+    
+    <!-- Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link href="css/styles.css" rel="stylesheet">
+    <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
+</head>
+<body>
+
+<div class="advinputs-container">
+    <form id="feesForm" name="feesForm" action="addfilefees.php" method="post">
+        <input type="hidden" name="fid" value="<?php echo safe_output($fileId); ?>">
+
+        <div class="advinputs">
+            <div class="input-container">
+                <p class="input-parag">
+                    <span class="blue-parag">مراحل الاتفاقية</span>
+                    <?php if ($row_permcheck['selectors_rperm'] == 1): ?>
+                        <a href="#" onclick="window.open('selector/Levels.php','','resizable=yes,status=no,location=no,toolbar=no,menubar=no,fullscreen=no,scrollbars=no,width=600,height=400'); return false;" title="إضافة مرحلة جديدة">
+                            <i class='bx bxs-add-to-queue'></i>
+                        </a>
+                    <?php endif; ?>
+                </p>
                 
-                $stmtid = $conn->prepare("SELECT * FROM file WHERE file_id=?");
-                $stmtid->bind_param("i", $id);
-                $stmtid->execute();
-                $resultid = $stmtid->get_result();
-                $row_details = $resultid->fetch_assoc();
-                $stmtid->close();
-                if($admin != 1){
-                    if($row_details['secret_folder'] == 1){
-                        $empids = $row_details['secret_emps'];
-                        $empids = array_filter(array_map('trim', explode(',', $empids)));
-                        if (!in_array($_SESSION['id'], $empids)) {
-                            exit();
-                        }
-                    }
-                }
-            } else{
-                exit();
-            }
-        ?>
-        <div class="advinputs-container" style="height: fit-content; overflow-y: auto">
-            <form method="post" action="javascript:void(0);" name="addform" enctype="multipart/form-data" onsubmit="submitForm()">
-                <div class="advinputs">
-                    <div class="input-container">
-                        <input type="hidden" name="fid" value="<?php echo safe_output($_GET['id']);?>">
-                        <p class="input-parag">
-                            <font class="blue-parag">
-                                مراحل الاتفاقية 
-                                <?php if($row_permcheck['selectors_rperm'] == 1){?>
-                                <img src="img/add-button.png" width="20px" height="20px" title="اضافة" onclick="MM_openBrWindow('selector/Levels.php','','resizable=yes,status=no,location=no,toolbar=no,menubar=no,fullscreen=no,scrollbars=no,width=600,height=400')" align="absmiddle" style="cursor:pointer"/>
-                                <?php }?>
-                            </font>
-                        </p>
-                        <?php
-                            $stmtfid = $conn->prepare("SELECT * FROM file WHERE file_id=?");
-                            $stmtfid->bind_param("i", $id);
-                            $stmtfid->execute();
-                            $resultfid = $stmtfid->get_result();
-                            $rowfid = $resultfid->fetch_assoc();
-                            $stmtfid->close();
-                            
-                            $file_levels = $rowfid['file_levels'];
-                            $levels_array = array_map('trim', explode(',', $file_levels));
-                            
-                            $stmtlevs = $conn->prepare("SELECT * FROM levels");
-                            $stmtlevs->execute();
-                            $resultlevs = $stmtlevs->get_result();
-                            
-                            if($resultlevs->num_rows > 0){
-                                while($rowlevs = $resultlevs->fetch_assoc()){
-                                    $level_id = $rowlevs['id'];
-                                    $level_name = $rowlevs['level_name'];
-                        ?>
-                        <input type="checkbox" name="levels[]" class="user-checkbox" value="<?php echo safe_output($level_id); ?>" <?php if (in_array($level_name, $levels_array)) echo 'checked'; ?>> 
-                            <p style="display: inline-block; padding: 5px;" class="blue-parag"><?php echo safe_output($level_name); ?></p><br>
-                        <?php 
-                                }
-                            }
-                            $stmtlevs->close();
-                        ?>
-                    </div>
+                <div class="checkbox-group">
+                    <?php if (empty($allLevels)): ?>
+                        <p>لا توجد مراحل معرفة في النظام.</p>
+                    <?php else: ?>
+                        <?php foreach ($allLevels as $level): ?>
+                            <div class="checkbox-item">
+                                <input type="checkbox" name="levels[]" class="user-checkbox" 
+                                       id="level_<?php echo safe_output($level['id']); ?>"
+                                       value="<?php echo safe_output($level['id']); ?>"
+                                       <?php if (in_array($level['level_name'], $selectedLevels)) echo 'checked'; ?>>
+                                <label for="level_<?php echo safe_output($level['id']); ?>">
+                                    <?php echo safe_output($level['level_name']); ?>
+                                </label>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
-                <div class="advinputs">
-                    <button type="submit" class="h-AdvancedSearch-Btn green-button">حفظ البيانات</button>
-                </div>
-            </form>
+            </div>
         </div>
+
+        <div class="advinputs3">
+            <button type="submit" class="green-button">حفظ البيانات</button>
+            <button type="button" class="form-btn cancel-btn" onclick="window.close();">إلغاء</button>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('feesForm');
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
         
-        <script src="https://mbhtest.com/js/newWindow.js"></script>
-        <script src="https://mbhtest.com/js/translate.js"></script>
-        <script src="https://mbhtest.com/js/toggleSection.js"></script>
-        <script src="https://mbhtest.com/js/dropfiles.js"></script>
-        <script src="https://mbhtest.com/js/popups.js"></script>
-        <script src="https://mbhtest.com/js/randomPassGenerator.js"></script>
-        <script src="https://mbhtest.com/js/sweetAlerts.js"></script>
-        <script src="https://mbhtest.com/js/sweetAlerts2.js"></script>
-        <script src="https://mbhtest.com/js/tablePages.js"></script>
-        <script src="https://mbhtest.com/js/checkAll.js"></script>
-        <script src="https://mbhtest.com/js/dropdown.js"></script>
-        <script>
-            function submitForm() {
-                const form = document.forms['addform'];
-                const formData = new FormData(form);
-                
-                fetch('addfilefees.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => {
-                    if (response.ok) {
-                        window.close();
+        const formData = new FormData(form);
+        
+        fetch('addfilefees.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (response.ok) {
+                Swal.fire({
+                    title: 'نجاح!',
+                    text: 'تم تحديث مراحل الاتفاقية بنجاح.',
+                    icon: 'success',
+                    confirmButtonText: 'موافق'
+                }).then(() => {
+                    if (window.opener && !window.opener.closed) {
                         window.opener.location.reload();
-                    } else {
-                        alert('Error: حدث خطأ');
                     }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error: حدث خطأ');
+                    window.close();
                 });
+            } else {
+                throw new Error('An error occurred while saving the data.');
             }
-        </script>
-        <?php }?>
-    </body>
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                title: 'خطأ!',
+                text: 'حدث خطأ أثناء محاولة حفظ البيانات.',
+                icon: 'error',
+                confirmButtonText: 'موافق'
+            });
+        });
+    });
+});
+</script>
+
+</body>
 </html>

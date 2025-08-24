@@ -1,0 +1,162 @@
+/* FILE: css/fees_agreement_styles.css */
+
+/* ==========================================================================
+   Basic Page and Print Setup
+   ========================================================================== */
+@page {
+    size: A4;
+    margin: 0;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0; /* Background for screen view */
+}
+
+.page {
+    width: 210mm;
+    height: 297mm;
+    margin: 20px auto; /* Center page on screen */
+    padding: 40mm 20mm 20mm 20mm;
+    background-image: url('../img/Picture1.png'); /* Ensure the path is correct */
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    box-sizing: border-box;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5); /* Add shadow for better screen view */
+    position: relative;
+    page-break-after: always;
+}
+
+/* ==========================================================================
+   Controls for Screen View
+   ========================================================================== */
+.controls {
+    position: sticky;
+    top: 0;
+    width: 210mm;
+    margin: 0 auto 10px auto;
+    padding: 8px;
+    background-color: #f8ccac;
+    text-align: center;
+    z-index: 100;
+    border-radius: 0 0 5px 5px;
+}
+
+.controls button {
+    padding: 5px 15px;
+    margin: 0 5px;
+    background-color: #fff;
+    border: 1px solid #d4a373;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    outline: none;
+}
+
+.controls button:hover {
+    background-color: #faedcd;
+}
+
+/* ==========================================================================
+   Document Header
+   ========================================================================== */
+.document-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    margin-bottom: 20px;
+}
+
+.header-title-en,
+.header-title-ar {
+    text-align: center;
+}
+
+.header-title-en h3,
+.header-title-ar h3 {
+    margin: 0;
+    text-decoration: underline;
+}
+
+.header-title-en {
+    text-align: left;
+}
+
+.header-title-ar {
+    text-align: right;
+}
+
+/* ==========================================================================
+   Table Styling
+   ========================================================================== */
+.fees-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.fees-table th,
+.fees-table td {
+    border: 2px solid #000;
+    padding: 8px;
+    text-align: center;
+}
+
+.fees-table th {
+    background-color: #f4b183;
+    font-size: 14pt;
+    font-weight: bold;
+}
+
+.client-name {
+    font-style: italic;
+}
+
+/* ==========================================================================
+   Editable Cells
+   ========================================================================== */
+.editable-cell {
+    width: 100%;
+    min-height: 25px; /* Minimum height for a cell */
+    padding: 4px;
+    background: transparent;
+    border: none;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    overflow: hidden;
+    resize: none;
+    text-align: right;
+}
+
+/* ==========================================================================
+   Print-Specific Styles
+   ========================================================================== */
+@media print {
+    body {
+        background-color: #fff;
+    }
+
+    .no-print {
+        display: none;
+    }
+
+    .page {
+        margin: 0;
+        box-shadow: none;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .editable-cell {
+        border: none;
+        background: transparent;
+        outline: none;
+    }
+
+    textarea::-webkit-scrollbar {
+        display: none;
+    }
+}

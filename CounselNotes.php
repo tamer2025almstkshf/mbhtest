@@ -1,62 +1,146 @@
 <?php
-    include_once 'connection.php';
-    include_once 'login_check.php';
+// FILE: CounselNotes.php
+
+/**
+ * Displays a single counsel note related to a specific file.
+ *
+ * GET Params:
+ * - nid: The Note ID (required, integer).
+ */
+
+// 1. INCLUDES & BOOTSTRAPPING
+// =============================================================================
+include_once 'connection.php';
+include_once 'login_check.php'; // Ensures the user is logged in
+include_once 'safe_output.php';
+
+// 2. INPUT VALIDATION & INITIALIZATION
+// =============================================================================
+$noteId = isset($_GET['nid']) ? (int)$_GET['nid'] : 0;
+
+if ($noteId <= 0) {
+    http_response_code(400);
+    die('Invalid Note ID provided.');
+}
+
+// 3. DATA FETCHING
+// =============================================================================
+$noteData = null;
+$fileData = null;
+
+// Fetch the note details
+$stmt = $conn->prepare("SELECT * FROM file_note WHERE id = ?");
+$stmt->bind_param("i", $noteId);
+$stmt->execute();
+$result = $stmt->get_result();
+$noteData = $result->fetch_assoc();
+$stmt->close();
+
+if (!$noteData) {
+    http_response_code(404);
+    die('Note not found.');
+}
+
+// Fetch the associated file details using the file_id from the note
+$fileId = $noteData['file_id'];
+$stmt = $conn->prepare("SELECT file_id, frelated_place FROM file WHERE file_id = ?");
+$stmt->bind_param("i", $fileId);
+$stmt->execute();
+$result = $stmt->get_result();
+$fileData = $result->fetch_assoc();
+$stmt->close();
+
+if (!$fileData) {
+    // This indicates a data integrity issue (a note without a file), but we should handle it.
+    http_response_code(404);
+    die('Associated file not found for this note.');
+}
+
+// 4. HELPER FUNCTIONS
+// =============================================================================
+function getFilePrefix($place) {
+    $prefixes = [
+        'عجمان' => 'AJM',
+        'دبي' => 'DXB',
+        'الشارقة' => 'SHJ'
+    ];
+    return $prefixes[$place] ?? '';
+}
+
 ?>
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ملاحظات على الملف</title>
+    <link href="css/styles.css" rel="stylesheet"> <!-- Assuming a general stylesheet -->
+    <style>
+        body {
+            background-color: #f4f7f9;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .note-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            overflow: hidden; /* To contain floated elements and rounded corners */
+        }
+        .note-header {
+            background-color: #f9f9f9;
+            padding: 15px 20px;
+            border-bottom: 1px solid #ddd;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+        }
+        .file-id-prefix {
+            color: #d9534f; /* Reddish color for emphasis */
+        }
+        .note-body {
+            padding: 20px;
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #555;
+            white-space: pre-wrap; /* Respects newlines and whitespace */
+        }
+        .note-footer {
+            background-color: #f9f9f9;
+            padding: 10px 20px;
+            border-top: 1px solid #ddd;
+            text-align: left;
+            font-size: 0.9rem;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" dir="rtl">
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=windows-1256" />
-        <title>ملاحظات على الملف</title>
-        <link rel="stylesheet" type="text/css" href="css/sites.css">
-        <link href="css/login.css" rel="stylesheet" type="text/css" />
-    </head>
-    <body>
-        <?php
-            if(isset($_GET['nid'])){
-                $nid = $_GET['nid'];
-            } else{
-                exit();
-            }
+    <div class="note-container">
+        <header class="note-header">
+            ملاحظات للملف رقم: 
+            <span class="file-id-prefix">
+                <?php echo safe_output(getFilePrefix($fileData['frelated_place'])); ?>
+            </span>
+            <?php echo safe_output($fileData['file_id']); ?>
+        </header>
 
-            $query = "SELECT * FROM file_note WHERE id='$nid'";
-            $result = mysqli_query($conn, $query);
+        <main class="note-body">
+            <p><?php echo nl2br(safe_output($noteData['note'])); ?></p>
+        </main>
+        
+        <footer class="note-footer">
+            <span><?php echo safe_output($noteData['timestamp']); ?></span>
+            <?php if (!empty($noteData['doneby'])): ?>
+                <span> | بواسطة: <?php echo safe_output($noteData['doneby']); ?></span>
+            <?php endif; ?>
+        </footer>
+    </div>
 
-            if($result->num_rows === 0){
-                exit();
-            }
-
-            $row = mysqli_fetch_array($result);
-            $fid = $row['file_id'];
-
-            $query2 = "SELECT * FROM file WHERE file_id='$fid'";
-            $result2 = mysqli_query($conn, $query2);
-            $row2 = mysqli_fetch_array($result2);
-            
-        ?>
-        <table width="98%" border="0" cellspacing="1" cellpadding="1" align="center" bgcolor="#FFFFFF"  >
-            <tr>
-                <th colspan="2" style="font-size:16px; background-color:#FF9" class="table2"> رقم الملف 
-                    <font color="#FF0000">
-                        <?php
-                            if($row2['frelated_place'] === 'عجمان'){
-                                echo 'AJM';
-                            } elseif($row2['frelated_place'] === 'دبي'){
-                                echo 'DXB';
-                            } elseif($row2['frelated_place'] === 'الشارقة'){
-                                echo 'SHJ';
-                            }
-                        ?>
-                    </font><?php echo $fid;?>
-                </th>
-            </tr>
-            <tr>
-                <th width="100%" colspan="2" style="font-size:16px">
-                    <div align="justify" dir="rtl"><?php if(isset($row['note'])){ echo $row['note'];}?><br />
-                        <font color="#0000FF" style=" font-size:14px"><?php if(isset($row['timestamp'])){echo $row['timestamp'];} if(isset($row['doneby'])){echo ' ' . $row['doneby'];}?></font>
-                    </div>
-                </th>
-            </tr>
-        </table>
-    </body>
+</body>
 </html>

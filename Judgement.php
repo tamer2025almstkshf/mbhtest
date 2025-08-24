@@ -1,137 +1,172 @@
 <?php
-    include_once 'connection.php';
-    include_once 'login_check.php';
-    include_once 'permissions_check.php';
-    include_once 'safe_output.php';
-    include_once 'golden_pass.php';
+// FILE: Judgement.php
+
+/**
+ * This page provides a form to record the final judgment for a specific court session.
+ * It performs security checks for user permissions and file access.
+ *
+ * GET Params:
+ * - sid: The session ID (required, integer).
+ * - fid: The file ID (required, integer).
+ */
+
+// 1. INCLUDES & BOOTSTRAPPING
+// =============================================================================
+include_once 'connection.php';
+include_once 'login_check.php';
+include_once 'permissions_check.php';
+include_once 'safe_output.php';
+include_once 'golden_pass.php';
+
+// 2. PERMISSIONS & INPUT VALIDATION
+// =============================================================================
+
+// Check for general session permissions first.
+if ($row_permcheck['session_aperm'] != 1 && $row_permcheck['session_eperm'] != 1) {
+    http_response_code(403);
+    die('Access Denied: You do not have permission to perform this action.');
+}
+
+// Validate and sanitize input GET parameters.
+$sessionId = isset($_GET['sid']) ? (int)$_GET['sid'] : 0;
+$fileId = isset($_GET['fid']) ? (int)$_GET['fid'] : 0;
+
+if ($sessionId <= 0 || $fileId <= 0) {
+    http_response_code(400);
+    die('Invalid session or file ID.');
+}
+
+// 3. DATA FETCHING & SECURITY CHECKS
+// =============================================================================
+
+// Fetch file details for secret folder access check.
+$stmt = $conn->prepare("SELECT secret_folder, secret_emps FROM file WHERE file_id = ?");
+$stmt->bind_param("i", $fileId);
+$stmt->execute();
+$fileDetails = $stmt->get_result()->fetch_assoc();
+$stmt->close();
+
+if (!$fileDetails) {
+    http_response_code(404);
+    die('File not found.');
+}
+
+// Security Check for secret folders.
+if ($admin != 1 && $fileDetails['secret_folder'] == 1) {
+    $allowedUserIds = array_filter(array_map('trim', explode(',', $fileDetails['secret_emps'])));
+    if (!in_array($_SESSION['id'], $allowedUserIds, true)) {
+        http_response_code(403);
+        die('Access Denied: You do not have permission to access this secret file.');
+    }
+}
+
+// Fetch existing session data to pre-fill the form.
+$stmt = $conn->prepare("SELECT session_trial, resume_appeal FROM session WHERE session_id = ?");
+$stmt->bind_param("i", $sessionId);
+$stmt->execute();
+$sessionData = $stmt->get_result()->fetch_assoc();
+$stmt->close();
+
+if (!$sessionData) {
+    http_response_code(404);
+    die('Session not found.');
+}
+
+// Determine the type of follow-up action (appeal, grievance, etc.).
+$followUpTypeMap = [
+    '1' => 'الاستئناف',
+    '2' => 'الطعن',
+    '3' => 'التظلم',
+    '4' => 'المعارضة'
+];
+$followUpType = $followUpTypeMap[$sessionData['resume_appeal']] ?? '';
+
 ?>
 <!DOCTYPE html>
-<html dir="rtl">
-    <head>
-        <title>محمد بني هاشم للمحاماة و الاستشارات القانونية</title>
-        <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-        <meta name="google-site-verification" content="_xmqQ0kTuDS9ta1v4E4je5rweWQ4qtH1l8_cnWro7Tk" />
-        <meta name="robots" content="noindex, nofollow">
-        <meta name="googlebot" content="noindex">
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-        <link rel="shortcut icon" href="files/images/instance/favicon.ico?v=35265" type="image/icon">
-        <link href="css/styles.css" rel="stylesheet">
-        <link rel="SHORTCUT ICON" href="img/favicon.ico">
-        <meta http-equiv="Content-Type" content="text/html; charset=windows-1256" />
-    </head>
-    <body>
-        <br>
-        <?php
-            if(isset($_GET['sid']) && $_GET['sid'] !== ''){
-                $sid = $_GET['sid'];
-            }
-            if(isset($_GET['fid']) && $_GET['fid'] !== ''){
-                $fid = $_GET['fid'];
-                
-                $stmtid = $conn->prepare("SELECT * FROM file WHERE file_id=?");
-                $stmtid->bind_param("i", $fid);
-                $stmtid->execute();
-                $resultid = $stmtid->get_result();
-                $row_details = $resultid->fetch_assoc();
-                $stmtid->close();
-                if($admin != 1){
-                    if($row_details['secret_folder'] == 1){
-                        $empids = $row_details['secret_emps'];
-                        $empids = array_filter(array_map('trim', explode(',', $empids)));
-                        if (!in_array($_SESSION['id'], $empids)) {
-                            exit();
-                        }
-                    }
-                }
-            } else{
-                exit();
-            }
-            if($row_permcheck['session_aperm'] == 1 || $row_permcheck['session_eperm'] == 1){
-        ?>
-        <div class="advinputs-container" style="height: fit-content; overflow-y: auto">
-            <form method="post" action="javascript:void(0);" name="SearchForm" enctype="multipart/form-data" onsubmit="submitForm()">
-                <input type="hidden" name="session_fid" value="<?php echo safe_output($fid);?>"/>
-                <input type="hidden" name="session_id" value="<?php echo safe_output($sid);?>"/>
-                <?php
-                    $sid = $_GET['sid'];
-                    $stmtsid = $conn->prepare("SELECT * FROM session WHERE session_id=?");
-                    $stmtsid->bind_param("i", $sid);
-                    $stmtsid->execute();
-                    $resultsid = $stmtsid->get_result();
-                    $rowsid = $resultsid->fetch_assoc();
-                    $stmtsid->close();
-                ?>
-                <h2 class="advinputs-h2">حجزت القضية للحكم</h2>
-                <div class="advinputs">
-                    <div class="input-container">
-                        <p class="input-parag"><font class="blue-parag">منطوق الحكم</font></p>
-                        <textarea class="form-input" name="booked_final" rows="2"><?php echo safe_output($rowsid['session_trial']);?></textarea> 
-                    </div>
-                    
-                    <?php
-                        $type = '';
-                        $dbtype = $rowsid['resume_appeal'];
-                        if($dbtype === '1'){
-                            $type = 'الاستئناف';
-                        } else if($dbtype === '2'){
-                            $type = 'الطعن';
-                        } else if($dbtype === '3'){
-                            $type = 'التظلم';
-                        } else if($dbtype === '4'){
-                            $type = 'المعارضة';
-                        }
-                    ?>
-                    <div class="input-container">
-                        <p class="input-parag"><font class="blue-parag">متابعة <?php echo safe_output($type);?></font></p>
-                        <input type="checkbox" name="continue" value="1" checked/>
-                    </div>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>تسجيل منطوق الحكم</title>
+    
+    <!-- Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link href="css/styles.css" rel="stylesheet">
+    <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
+</head>
+<body>
+
+<div class="advinputs-container">
+    <form id="judgmentForm" action="judge.php" method="post">
+        <input type="hidden" name="session_fid" value="<?php echo safe_output($fileId); ?>">
+        <input type="hidden" name="session_id" value="<?php echo safe_output($sessionId); ?>">
+        
+        <h2 class="advinputs-h2">تسجيل منطوق الحكم</h2>
+        
+        <div class="advinputs">
+            <div class="input-container">
+                <label for="booked_final" class="input-parag blue-parag">منطوق الحكم</label>
+                <textarea id="booked_final" class="form-input" name="booked_final" rows="4"><?php echo safe_output($sessionData['session_trial']); ?></textarea>
+            </div>
+            
+            <?php if (!empty($followUpType)): ?>
+            <div class="input-container">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="continue" value="1" id="continue_follow_up" checked>
+                    <label class="form-check-label blue-parag" for="continue_follow_up">
+                        متابعة <?php echo safe_output($followUpType); ?>
+                    </label>
                 </div>
-                <div class="advinputs3">
-                    <button type="submit" value="حفظ منطوق الحكم" class="green-button">حفظ منطوق الحكم</button>
-                </div>
-            </form>
+            </div>
+            <?php endif; ?>
         </div>
         
-        <script src="js/newWindow.js"></script>
-        <script src="js/translate.js"></script>
-        <script src="js/toggleSection.js"></script>
-        <script src="js/dropfiles.js"></script>
-        <script src="js/popups.js"></script>
-        <script src="js/randomPassGenerator.js"></script>
-        <script src="js/sweetAlerts.js"></script>
-        <script src="js/sweetAlerts2.js"></script>
-        <script src="js/tablePages.js"></script>
-        <script src="js/checkAll.js"></script>
-        <script src="js/dropdown.js"></script>
-        <?php }?>
-    </body>
-</html>
-    
+        <div class="advinputs3">
+            <button type="submit" class="green-button">حفظ منطوق الحكم</button>
+            <button type="button" class="form-btn cancel-btn" onclick="window.close();">إلغاء</button>
+        </div>
+    </form>
+</div>
+
 <script>
-    function submitForm() {
-        const form = document.forms['SearchForm'];
-        const formData = new FormData(form);
+document.getElementById('judgmentForm').addEventListener('submit', function(e) {
+    e.preventDefault();
     
-        fetch('judge.php', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => {
-            if (response.ok) {
-                // Close the popup window
+    const formData = new FormData(this);
+    
+    fetch('judge.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (response.ok) {
+            Swal.fire({
+                title: 'نجاح!',
+                text: 'تم حفظ منطوق الحكم بنجاح.',
+                icon: 'success',
+                confirmButtonText: 'موافق'
+            }).then(() => {
+                if (window.opener && !window.opener.closed) {
+                    window.opener.location.reload();
+                }
                 window.close();
-                // Refresh the main window
-                window.opener.location.reload();
-            } else {
-                alert('Error: Unable to save data.');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error: Unable to save data.');
+            });
+        } else {
+            throw new Error('Network response was not ok.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            title: 'خطأ!',
+            text: 'حدث خطأ أثناء محاولة حفظ البيانات.',
+            icon: 'error',
+            confirmButtonText: 'موافق'
         });
-    }
+    });
+});
 </script>
+
+</body>
+</html>

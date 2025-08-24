@@ -1,216 +1,173 @@
 <?php
-    include_once 'connection.php';
-    include_once 'login_check.php';
-?>
+// FILE: ClientCaseReport.php
 
+/**
+ * Generates a printable case report for a specific client.
+ *
+ * This script fetches all cases associated with a client and presents them
+ * in a structured report format, including details about legal fees, case
+ * summaries, and actions taken.
+ *
+ * GET Params:
+ * - cid: The client ID (required, integer).
+ */
+
+// 1. INCLUDES & BOOTSTRAPPING
+// =============================================================================
+include_once 'connection.php';
+include_once 'login_check.php';
+include_once 'safe_output.php';
+
+// 2. INPUT VALIDATION & INITIALIZATION
+// =============================================================================
+$clientId = isset($_GET['cid']) ? (int)$_GET['cid'] : 0;
+
+if ($clientId <= 0) {
+    http_response_code(400);
+    die('Invalid or missing Client ID.');
+}
+
+// 3. DATA FETCHING
+// =============================================================================
+
+// Fetch Client Details
+$stmt = $conn->prepare("SELECT id, engname FROM client WHERE id = ?");
+$stmt->bind_param("i", $clientId);
+$stmt->execute();
+$client = $stmt->get_result()->fetch_assoc();
+$stmt->close();
+
+if (!$client) {
+    http_response_code(404);
+    die('Client not found.');
+}
+
+// Fetch all files associated with the client
+$files = [];
+$stmt = $conn->prepare("
+    SELECT file_id, file_type, file_subject
+    FROM file 
+    WHERE file_client = ? OR file_client2 = ? OR file_client3 = ? OR file_client4 = ? OR file_client5 = ?
+    ORDER BY file_id DESC
+");
+$stmt->bind_param("iiiii", $clientId, $clientId, $clientId, $clientId, $clientId);
+$stmt->execute();
+$result = $stmt->get_result();
+
+while ($file = $result->fetch_assoc()) {
+    // For each file, get the latest session details and English file type
+    $file['latest_session'] = getLatestSessionForFile($conn, $file['file_id']);
+    $file['eng_file_type'] = getEnglishFileType($conn, $file['file_type']);
+    $files[] = $file;
+}
+$stmt->close();
+
+// 4. HELPER FUNCTIONS
+// =============================================================================
+function getLatestSessionForFile($conn, $fileId) {
+    $stmt = $conn->prepare("
+        SELECT case_num, year FROM session 
+        WHERE session_fid = ? AND session_trial != '' 
+        ORDER BY session_date DESC, session_id DESC 
+        LIMIT 1
+    ");
+    $stmt->bind_param("i", $fileId);
+    $stmt->execute();
+    $session = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+    return $session;
+}
+
+function getEnglishFileType($conn, $fileTypeAr) {
+    $stmt = $conn->prepare("SELECT engfile_type FROM file_types WHERE file_type = ?");
+    $stmt->bind_param("s", $fileTypeAr);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result->num_rows > 0) {
+        $type = $result->fetch_assoc();
+        $stmt->close();
+        return $type['engfile_type'];
+    }
+    $stmt->close();
+    
+    // Fallback for types not in the database table
+    $map = [
+        'جزاء' => 'Criminal',
+        'مدني -عمالى' => 'Civil',
+        'المنازعات الإيجارية' => 'Rental Disputes',
+        'أحوال شخصية' => 'Personal Status',
+    ];
+    return $map[$fileTypeAr] ?? 'General';
+}
+
+function numberToRoman($number) {
+    $map = ['M'=>1000, 'CM'=>900, 'D'=>500, 'CD'=>400, 'C'=>100, 'XC'=>90, 'L'=>50, 'XL'=>40, 'X'=>10, 'IX'=>9, 'V'=>5, 'IV'=>4, 'I'=>1];
+    $returnValue = '';
+    while ($number > 0) {
+        foreach ($map as $roman => $int) {
+            if($number >= $int) {
+                $number -= $int;
+                $returnValue .= $roman;
+                break;
+            }
+        }
+    }
+    return $returnValue;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Client Case Report</title>
-        <style>
-            * {
-                font-family: Arial;
-            }
-            
-            body {
-                margin: 0 20mm 20mm 20mm; /* Smaller margin: 20mm from all sides */
-                color: #000000;
-                font-size: 14px;
-                position: relative;
-                padding-bottom: 60px; /* Reserve space for footer */
-            }
-            
-            h1, h2, h3 {
-                font-weight: bold;
-            }
-            
-            h1 {
-                text-align: center;
-                font-size: 18px;
-                margin-bottom: 20px;
-            }
-            
-            h2 {
-                font-size: 16px;
-                margin-top: 40px;
-            }
-            
-            a {
-                color: #007bff;
-            }
-            
-            p {
-                margin: 10px 0;
-                line-height: 1.6;
-            }
-            
-            ul {
-                margin: 10px 20px;
-            }
-            
-            li {
-                margin-bottom: 10px;
-            }
-            
-            table {
-                width: 100%;
-                border-collapse: collapse;
-                margin-top: 30px;
-                font-size: 13px;
-                page-break-inside: auto;
-            }
-            
-            table, th, td {
-                border: 1px solid #ddd;
-            }
-            
-            th, td {
-                padding: 8px;
-                text-align: left;
-                vertical-align: top;
-            }
-            
-            th {
-                background-color: #f2f2f2;
-            }
-            
-            footer {
-                position: fixed;
-                bottom: 5mm; /* Take the footer closer to the bottom (was 10mm) */
-                left: 20mm;
-                right: 20mm;
-                width: calc(100% - 40mm);
-                text-align: left;
-                font-size: 12px;
-            }
-            
-            footer .line {
-                border-top: 1px solid gray;
-                margin-bottom: 2mm;
-            }
-            
-            footer .pagenumber {
-                letter-spacing: 2px;
-                color: gray;
-                display: inline-block;
-            }
-            
-            footer .number {
-                color: #007bff;
-                margin-left: 3px;
-            }
-            
-            @page {
-                margin: 20mm 20mm 20mm 20mm; /* Same margins for printing */
-            }
-            
-            @media print {
-                html, body {
-                    -webkit-print-color-adjust: exact;
-                    print-color-adjust: exact;
-                }
-            }
-        </style>
-    </head>
-    <body>
-        <div class="content">
-            <?php
-                $cid = $_GET['cid'];
-                $queryclient = "SELECT * FROM client WHERE id='$cid'";
-                $resultclient = mysqli_query($conn, $queryclient);
-                $rowclient = mysqli_fetch_array($resultclient);
-            ?>
-            <h1>Client Case Report / <?php echo $rowclient['engname'];?></h1>
-            <p>This report aims to document the time allocated to complete the tasks assigned to our legal team, record the reviews conducted with relevant authorities, and detail the efforts exerted in the cases entrusted to us.</p>
-            
+<head>
+    <meta charset="UTF-8">
+    <title>Client Case Report</title>
+    <link href="css/report_styles.css" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <h1>Client Case Report / <?php echo safe_output($client['engname']); ?></h1>
+    </header>
+
+    <main class="content">
+        <p>This report aims to document the time allocated to complete the tasks assigned to our legal team, record the reviews conducted with relevant authorities, and detail the efforts exerted in the cases entrusted to us.</p>
+        
+        <section>
             <h2>A. Estimation of Legal Fees:</h2>
-            <p style="margin-left: 20px">Legal fees per hour for each category of legal specialists have been estimated as follows:</p>
-            
+            <p>Legal fees per hour for each category of legal specialists have been estimated as follows:</p>
             <ul>
-                <li>Lawyers: AED 3,000 per hour.</li>
-                <li>Legal Consultants: AED 2,500 per hour.</li>
-                <li>Legal Researchers: AED 2,000 per hour.</li>
+                <li>Lawyers: <strong>AED 3,000 per hour.</strong></li>
+                <li>Legal Consultants: <strong>AED 2,500 per hour.</strong></li>
+                <li>Legal Researchers: <strong>AED 2,000 per hour.</strong></li>
             </ul>
-            
+        </section>
+        
+        <section>
             <h2>B. Cases Covered in the Report:</h2>
-            
-        <?php
-            function numberToRoman($number) {
-                $map = [
-                    'M'  => 1000,
-                    'CM' => 900,
-                    'D'  => 500,
-                    'CD' => 400,
-                    'C'  => 100,
-                    'XC' => 90,
-                    'L'  => 50,
-                    'XL' => 40,
-                    'X'  => 10,
-                    'IX' => 9,
-                    'V'  => 5,
-                    'IV' => 4,
-                    'I'  => 1
-                ];
-                
-                $roman = '';
-                
-                foreach ($map as $romanChar => $value) {
-                    while ($number >= $value) {
-                        $roman .= $romanChar;
-                        $number -= $value;
-                    }
-                }
-                
-                return $roman;
-            }
-            
-            $countrome = 0;
-            
-            $queryfile = "SELECT * FROM file WHERE file_client='$cid' OR file_client2='$cid' OR file_client3='$cid' OR file_client4='$cid' OR file_client5='$cid' ORDER BY file_id DESC";
-            $resultfile = mysqli_query($conn, $queryfile);
-            if($resultfile->num_rows > 0){
-                while($rowfile = mysqli_fetch_array($resultfile)){
-                    $countrome++;
-                    
-                    $sfid = $rowfile['file_id'];
-                    $querysess = "SELECT * FROM session WHERE session_fid='$sfid' AND session_trial!='' ORDER BY session_date DESC, session_id DESC";
-                    $resultsess = mysqli_query($conn, $querysess);
-                    $rowsess = mysqli_fetch_array($resultsess);
-                    
-                    $file_type = $rowfile['file_type'];
-                    $queryft = "SELECT * FROM file_types WHERE file_type='$file_type'";
-                    $resultft = mysqli_query($conn, $queryft);
-                    
-                    if($resultft->num_rows > 0){
-                        $rowft = mysqli_fetch_array($resultft);
-                        $engfile_type = $rowft['engfile_type'];
-                    } else {
-                        if($file_type === 'جزاء'){
-                            $engfile_type = 'Criminal';
-                        } else if($file_type === 'مدني -عمالى'){
-                            $engfile_type = 'Civil';
-                        } else if($file_type === 'المنازعات الإيجارية'){
-                            $engfile_type = 'Rental disputes';
-                        } else if($file_type === 'أحوال شخصية'){
-                            $engfile_type = 'Personal status';
-                        }
-                    }
-                    
-        ?>
-        <h3 style="margin-left: 20px; color: #3c88cc;">
-            <?php echo numberToRoman($countrome);?>.
-            <a href="#" style="color: #3c88cc;" onclick="MM_openBrWindow('CasePreview.php?fid=<?php echo $rowfile['file_id'];?>','','resizable=yes,status=no,location=no,toolbar=no,menubar=no,fullscreen=no,scrollbars=no,width=800,height=800')">
-                <?php echo $engfile_type;?> Case No. <?php echo $rowsess['case_num'];?>/<?php echo $rowsess['year'];?> – Charge: <?php echo $rowfile['file_subject'];?> (File No. <?php echo $rowfile['file_id'];?>)
-            </a>
-        </h3>
-        <?php }}?>
+            <?php if (empty($files)): ?>
+                <p>No cases found for this client.</p>
+            <?php else: ?>
+                <?php foreach ($files as $index => $file): ?>
+                    <?php if ($file['latest_session']): ?>
+                        <h3 class="case-title">
+                            <?php echo numberToRoman($index + 1); ?>.
+                            <a href="#" onclick="window.open('CasePreview.php?fid=<?php echo safe_output($file['file_id']); ?>','','resizable=yes,scrollbars=yes,width=800,height=800'); return false;">
+                                <?php echo safe_output($file['eng_file_type']); ?> Case No. <?php echo safe_output($file['latest_session']['case_num'] . '/' . $file['latest_session']['year']); ?>
+                                – Charge: <?php echo safe_output($file['file_subject']); ?> (File No. <?php echo safe_output($file['file_id']); ?>)
+                            </a>
+                        </h3>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </section>
+
+        <!-- Static content for demonstration purposes -->
+        <section>
+            <h2>C. Detailed Actions and Timeline:</h2>
             <p><strong>Initial Charges Upon Receipt:</strong> Extortion or threats using an information network or technological means.</p>
             <p><strong>Referral Order:</strong> Accusation of committing a felony against a person using information technology (WhatsApp), specifically stating, “I will kill you, you must die.”</p>
             <p><strong>Judgment issued on 10/12/2024 (In Absentia):</strong> The defendant was fined AED 5,000, and the civil claim was referred to the competent civil court. Despite falling under the aforementioned provisions, the trial proceeded under Articles 42/1, 56, and 59/1 (legitimate self-defense rights).</p>
             <p><strong>Appeal No. 13817/2024:</strong> A request was submitted to the Public Prosecution to appeal the issued judgment, registered under Appeal No. 2024/13817, with a hearing scheduled for 20/03/2025.</p>
             
-            <table>
+            <table class="report-table">
                 <thead>
                     <tr>
                         <th>No.</th>
@@ -240,21 +197,28 @@
                     </tr>
                 </tbody>
             </table>
+        </section>
+    </main>
+    
+    <footer>
+        <div class="line"></div>
+        <div class="footer-content">
+            <span>MBH Advocates & Legal Consultants</span>
+            <span class="page-number">Page <span class="number"></span></span>
         </div>
-        
-        <footer>
-            <div class="line"></div>
-            <div><span class="pagenumber">Page |</span><span class="number"></span></div>
-        </footer>
-        
-        <script src="js/newWindow.js"></script>
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const footerNumber = document.querySelector('footer .number');
-                if (footerNumber) {
-                    footerNumber.textContent = '1';
-                }
-            });
-        </script>
-    </body>
+    </footer>
+    
+    <script>
+        // Simple script for page numbering in print view
+        document.addEventListener('DOMContentLoaded', function () {
+            const pageNumberSpan = document.querySelector('footer .number');
+            if (pageNumberSpan) {
+                // This is a simple implementation. For multi-page reports in browser print,
+                // this will only show '1'. A more complex solution with print event listeners
+                // or a library like Paged.js would be needed for accurate page numbers.
+                pageNumberSpan.textContent = '1'; 
+            }
+        });
+    </script>
+</body>
 </html>
