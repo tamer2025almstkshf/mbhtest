@@ -1,127 +1,122 @@
 <?php
     include_once 'connection.php';
     include_once 'login_check.php';
+
+    // Use a prepared statement to securely fetch user permission data.
+    $user_id = $_SESSION['id'];
+    $stmt = $conn->prepare("SELECT * FROM user WHERE id = ?");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user_permissions = $result->fetch_assoc();
+    $stmt->close();
+
+    if (!$user_permissions) {
+        // Handle case where user is not found, e.g., redirect to logout.
+        header("Location: logout.php");
+        exit();
+    }
 ?>
 <!DOCTYPE html>
 <html dir="rtl">
-    <head>
-        <title>محمد بني هاشم للمحاماة و الاستشارات القانونية</title>
-        <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-        <meta name="google-site-verification" content="_xmqQ0kTuDS9ta1v4E4je5rweWQ4qtH1l8_cnWro7Tk" />
-        <meta name="robots" content="noindex, nofollow">
-        <meta name="googlebot" content="noindex">
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-        <link rel="shortcut icon" href="files/images/instance/favicon.ico?v=35265" type="image/icon">
-        <link href="css/styles.css" rel="stylesheet">
-        <link rel="SHORTCUT ICON" href="img/favicon.ico">
-    </head>
-    <body>
-        <?php
-            $id = $_SESSION['id'];
-            $querymain = "SELECT * FROM user WHERE id='$id'";
-            $resultmain = mysqli_query($conn, $querymain);
-            $rowmain = mysqli_fetch_array($resultmain);
-            
-            $myid = $_SESSION['id'];
-            $query_permcheck = "SELECT * FROM user WHERE id='$myid'";
-            $result_permcheck = mysqli_query($conn, $query_permcheck);
-            $row_permcheck = mysqli_fetch_array($result_permcheck);
-            
-            include_once 'AES256.php';
-        ?>
-        <div class="container">
-            <?php include_once 'sidebar.php';?>
-            <div class="website">
-                <?php 
-                    include_once 'header.php';
-                    if($row_permcheck['accfinance_rperm'] === '1' || $row_permcheck['accsecterms_rperm'] === '1' || $row_permcheck['accbankaccs_rperm'] === '1' || $row_permcheck['acccasecost_rperm'] === '1' || $row_permcheck['accrevenues_rperm'] === '1' || $row_permcheck['accexpenses_rperm'] === '1'){
-                ?>
-                <div class="web-page"><br><br>
-                    <div style="height: 80vh; align-content: center; text-align: -webkit-center;">
-                        <div class="advinputs-container" style="max-height: 80vh; overflow-y: auto; width: fit-content">
-                            <h2 class="advinputs-h2">الحسابات</h2>
-                            <div class="links-container">
-                                <div class="links3">
-                                    <?php if($row_permcheck['accfinance_rperm'] === '1'){?>
+<head>
+    <title>محمد بني هاشم للمحاماة و الاستشارات القانونية</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="shortcut icon" href="files/images/instance/favicon.ico?v=35265" type="image/icon">
+    <link href="css/styles.css" rel="stylesheet">
+    <link rel="SHORTCUT ICON" href="img/favicon.ico">
+</head>
+<body>
+    <div class="container">
+        <?php include_once 'sidebar.php'; ?>
+        <div class="website">
+            <?php 
+                include_once 'header.php';
+                // Check if user has permission to view any of the account sections.
+                if (
+                    !empty($user_permissions['accfinance_rperm']) ||
+                    !empty($user_permissions['accsecterms_rperm']) ||
+                    !empty($user_permissions['accbankaccs_rperm']) ||
+                    !empty($user_permissions['acccasecost_rperm']) ||
+                    !empty($user_permissions['accrevenues_rperm']) ||
+                    !empty($user_permissions['accexpenses_rperm'])
+                ) {
+            ?>
+            <div class="web-page">
+                <br><br>
+                <div style="height: 80vh; display: flex; justify-content: center; align-items: center;">
+                    <div class="advinputs-container" style="max-height: 80vh; overflow-y: auto; width: fit-content">
+                        <h2 class="advinputs-h2">الحسابات</h2>
+                        <div class="links-container">
+                            <div class="links3">
+                                <?php if (!empty($user_permissions['accfinance_rperm'])) { ?>
                                     <div class="link-align">
-                                        <div class="link link2" onclick="MM_openBrWindow('Finance.php','','resizable=yes,status=no,location=no,toolbar=no,menubar=no,fullscreen=no,scrollbars=no,width=800,height=800')">
+                                        <a href="Finance.php" target="_blank" class="link link2">
                                             <div class="images-style" style="background-image: url('img/finance.png');"></div>
-                                            <p class="link-topic"><font id="courts-translate">قسم المالية</font></p>
-                                        </div>
+                                            <p class="link-topic">قسم المالية</p>
+                                        </a>
                                     </div>
-                                    <?php 
-                                        }
-                                        if($row_permcheck['accsecterms_rperm'] === '1'){
-                                    ?>
+                                <?php } ?>
+                                <?php if (!empty($user_permissions['accsecterms_rperm'])) { ?>
                                     <div class="link-align">
-                                        <div class="link link2" onclick="MM_openBrWindow('SubCategory.php','','resizable=yes,status=no,location=no,toolbar=no,menubar=no,fullscreen=no,scrollbars=no,width=800,height=800')">
+                                        <a href="SubCategory.php" target="_blank" class="link link2">
                                             <div class="images-style" style="background-image: url('img/subcategory.png');"></div>
-                                        <p class="link-topic"><font id="accounting2-translate">البنود الفرعية</font></p>
-                                        </div>
+                                            <p class="link-topic">البنود الفرعية</p>
+                                        </a>
                                     </div>
-                                    <?php 
-                                        }
-                                        if($row_permcheck['accbankaccs_rperm'] === '1'){
-                                    ?>
+                                <?php } ?>
+                                <?php if (!empty($user_permissions['accbankaccs_rperm'])) { ?>
                                     <div class="link-align">
-                                        <div class="link link2" onclick="MM_openBrWindow('BankAccs.php','','resizable=yes,status=no,location=no,toolbar=no,menubar=no,fullscreen=no,scrollbars=no,width=800,height=800')">
+                                        <a href="BankAccs.php" target="_blank" class="link link2">
                                             <div class="images-style" style="background-image: url('img/bankaccs.png');"></div>
-                                        <p class="link-topic"><font id="humanresources2-translate">حسابات البنوك</font></p>
-                                        </div>
+                                            <p class="link-topic">حسابات البنوك</p>
+                                        </a>
                                     </div>
-                                    <?php 
-                                        }
-                                        if($row_permcheck['acccasecost_rperm'] === '1'){
-                                    ?>
+                                <?php } ?>
+                                <?php if (!empty($user_permissions['acccasecost_rperm'])) { ?>
                                     <div class="link-align">
-                                        <div class="link link2" onclick="MM_openBrWindow('CasesFees.php','','resizable=yes,status=no,location=no,toolbar=no,menubar=no,fullscreen=no,scrollbars=no,width=800,height=800')">
+                                        <a href="CasesFees.php" target="_blank" class="link link2">
                                             <div class="images-style" style="background-image: url('img/fees.png');"></div>
-                                        <p class="link-topic"><font id="clients2-translate">اتعاب القضايا</font></p>
-                                        </div>
+                                            <p class="link-topic">اتعاب القضايا</p>
+                                        </a>
                                     </div>
-                                    <?php 
-                                        }
-                                        if($row_permcheck['accrevenues_rperm'] === '1'){
-                                    ?>
+                                <?php } ?>
+                                <?php if (!empty($user_permissions['accrevenues_rperm'])) { ?>
                                     <div class="link-align">
-                                        <div class="link link2" onclick="MM_openBrWindow('income.php','','resizable=yes,status=no,location=no,toolbar=no,menubar=no,fullscreen=no,scrollbars=no,width=800,height=800')">
+                                        <a href="income.php" target="_blank" class="link link2">
                                             <div class="images-style" style="background-image: url('img/income.png');"></div>
-                                        <p class="link-topic"><font id="tasks3-translate">الايرادات</font></p>
-                                        </div>
+                                            <p class="link-topic">الايرادات</p>
+                                        </a>
                                     </div>
-                                    <?php 
-                                        }
-                                        if($row_permcheck['accexpenses_rperm'] === '1'){
-                                    ?>
+                                <?php } ?>
+                                <?php if (!empty($user_permissions['accexpenses_rperm'])) { ?>
                                     <div class="link-align">
-                                        <div class="link link2" onclick="MM_openBrWindow('expenses.php','','resizable=yes,status=no,location=no,toolbar=no,menubar=no,fullscreen=no,scrollbars=no,width=800,height=800')">
+                                        <a href="expenses.php" target="_blank" class="link link2">
                                             <div class="images-style" style="background-image: url('img/expenses.png');"></div>
-                                        <p class="link-topic"><font id="clients2-translate">المصروفات</font></p>
-                                        </div>
+                                            <p class="link-topic">المصروفات</p>
+                                        </a>
                                     </div>
-                                    <?php }?>
-                                </div>
+                                <?php } ?>
                             </div>
                         </div>
                     </div>
                 </div>
-                <?php }?>
             </div>
+            <?php } else { ?>
+                <div class="web-page">
+                    <p style="text-align: center; margin-top: 50px;">You do not have permission to view this section.</p>
+                </div>
+            <?php } ?>
         </div>
-        
-        <script src="js/newWindow.js"></script>
-        <script src="js/translate.js"></script>
-        <script src="js/toggleSection.js"></script>
-        <script src="js/dropfiles.js"></script>
-        <script src="js/popups.js"></script>
-        <script src="js/randomPassGenerator.js"></script>
-        <script src="js/sweetAlerts.js"></script>
-        <script src="js/sweetAlerts2.js"></script>
-        <script src="js/tablePages.js"></script>
-        <script src="js/checkAll.js"></script>
-        <script src="js/dropdown.js"></script>
-    </body>
+    </div>
+    
+    <script src="js/translate.js"></script>
+    <script src="js/toggleSection.js"></script>
+    <!-- Add other scripts as needed -->
+</body>
 </html>
