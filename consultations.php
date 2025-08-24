@@ -1,10 +1,12 @@
 <?php
 $pageTitle = 'الاستشارات القانونية';
-include_once 'login_check.php';
-include_once 'safe_output.php';
-include_once 'permissions_check.php';
-include_once 'AES256.php';
-include_once 'layout/header.php'; // Use modern header
+include_once 'bootstrap.php';
+include_once 'layout/header.php';
+
+if (!$logged_in) {
+    header("Location: login.php");
+    exit();
+}
 
 if ($row_permcheck['cons_rperm'] != 1) {
     echo '<div class="container mt-5"><div class="alert alert-danger">ليس لديك الصلاحية لعرض هذه الصفحة.</div></div>';
@@ -14,7 +16,7 @@ if ($row_permcheck['cons_rperm'] != 1) {
 
 // Logic to determine the current branch
 $current_branch = $_GET['branch'] ?? '';
-$user_branch = $_SESSION['work_place'] ?? ''; // Assuming work_place is stored in session
+$user_branch = $row_permcheck['work_place'] ?? '';
 
 // If user is not an admin, force them to their own branch
 if ($admin != 1 && $current_branch !== $user_branch) {
@@ -33,7 +35,6 @@ if ($admin != 1 && $current_branch !== $user_branch) {
                         <select class="form-select" name="branch" onchange="this.form.submit()">
                             <option value="">كل الفروع</option>
                             <?php
-                            // The new, fully data-driven branch selector
                             $stmt_branchs = $conn->prepare("SELECT * FROM branchs ORDER BY branch ASC");
                             $stmt_branchs->execute();
                             $result_branchs = $stmt_branchs->get_result();
@@ -103,7 +104,6 @@ if ($admin != 1 && $current_branch !== $user_branch) {
                                     <td><?php echo safe_output($row['email']); ?></td>
                                     <td>
                                         <?php
-                                        // Fetch employee name
                                         $emp_id = $row['empid'];
                                         $stmt_emp = $conn->prepare("SELECT name FROM user WHERE id=?");
                                         $stmt_emp->bind_param("i", $emp_id);

@@ -1,11 +1,15 @@
 <?php
 $pageTitle = 'سجل المكالمات الهاتفية';
-include_once 'login_check.php';
-include_once 'permissions_check.php';
-include_once 'safe_output.php';
-include_once 'AES256.php';
-include_once 'layout/header.php'; // Use modern header
+include_once 'bootstrap.php'; // Unified bootstrap file
+include_once 'layout/header.php'; // For HTML <head>
 
+// Login check
+if (!$logged_in) {
+    header("Location: login.php");
+    exit();
+}
+
+// Permission check
 if ($row_permcheck['call_rperm'] != 1) {
     echo '<div class="container mt-5"><div class="alert alert-danger">ليس لديك الصلاحية لعرض هذه الصفحة.</div></div>';
     include_once 'layout/footer.php';
@@ -14,7 +18,7 @@ if ($row_permcheck['call_rperm'] != 1) {
 
 // Logic to determine the current branch
 $current_branch = $_GET['branch'] ?? '';
-$user_branch = $_SESSION['work_place'] ?? ''; // Assuming work_place is stored in session
+$user_branch = $row_permcheck['work_place'] ?? '';
 
 // If user is not an admin, force them to their own branch
 if ($admin != 1 && $current_branch !== $user_branch) {
