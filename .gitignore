@@ -3,16 +3,25 @@
 
 # Environment variables
 .env
+.env.*
+!.env.example
 
-# PHP error log
+# Cache, log, and upload directories
+/cache/
+/log/
+/logs/
+/upload/
+/uploads/
+
+# PHP error logs
 error_log
+*.log
 
-# Docker-specific files
-/.dockerignore
-
-# IDE-specific files (e.g., VS Code)
+# IDE-specific files
 .vscode/
+.idea/
+*.iml
 
 # OS generated files
 .DS_Store
-thumbs.db
+Thumbs.db
