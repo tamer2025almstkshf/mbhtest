@@ -19,4 +19,14 @@ composer install
 ./vendor/bin/phpunit
 ```
 
+If the project requires packages from private GitHub repositories, configure Composer authentication before running `composer install`:
+
+```sh
+export GITHUB_TOKEN=your_token
+# or
+composer config -g github-oauth.github.com your_token
+```
+
+If you cannot provide credentials, mirror or replace those private dependencies with public equivalents so `composer install` works without special access.
+
 The tests use mocked database connections to avoid touching production data.
