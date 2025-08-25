@@ -12,12 +12,15 @@ include_once 'connection.php';
 include_once 'login_check.php';
 include_once 'safe_output.php';
 include_once 'permissions_check.php'; // This should set $row_permcheck
+include_once 'src/I18n.php';
+
+$i18n = new I18n('translations/CasesFees.yaml');
 
 // 2. PERMISSIONS CHECK
 // =============================================================================
 if ($row_permcheck['acccasecost_rperm'] !== '1') {
     http_response_code(403);
-    die('You do not have permission to access this page.');
+    die($i18n->get('no_permission_access'));
 }
 
 // 3. DATA FETCHING & INITIALIZATION
@@ -111,9 +114,9 @@ function getLatestDegreeForFile($conn, $fileId) {
 }
 ?>
 <!DOCTYPE html>
-<html dir="rtl" lang="ar">
+<html dir="<?php echo $i18n->getDirection(); ?>" lang="<?php echo $i18n->getLocale(); ?>">
 <head>
-    <title>اتعاب القضايا</title>
+    <title><?php echo $i18n->get('cases_fees'); ?></title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Dependencies -->
@@ -132,12 +135,12 @@ function getLatestDegreeForFile($conn, $fileId) {
                 <div class="table-container">
                     <header class="table-header">
                         <div class="table-header-right">
-                            <h3>اتعاب القضايا</h3>
+                            <h3><?php echo $i18n->get('cases_fees'); ?></h3>
                         </div>
                         <div class="table-header-left">
                             <?php if ($row_permcheck['acccasecost_aperm'] === '1'): ?>
                                 <button class="add-btn" onclick="openModal('addFeeModal')">
-                                    <i class='bx bx-plus'></i> إضافة اتعاب
+                                    <i class='bx bx-plus'></i> <?php echo $i18n->get('add_fees'); ?>
                                 </button>
                             <?php endif; ?>
                         </div>
@@ -149,16 +152,16 @@ function getLatestDegreeForFile($conn, $fileId) {
                                 <thead>
                                     <tr>
                                         <th style="width: 40px;"><input type="checkbox" id="selectAll"></th>
-                                        <th>رقم الملف</th>
-                                        <th>قيمة الاتعاب</th>
-                                        <th>قيمة الاعمال الادارية</th>
-                                        <th>نسبة التنبيه</th>
+                                        <th><?php echo $i18n->get('file_number'); ?></th>
+                                        <th><?php echo $i18n->get('fees_value'); ?></th>
+                                        <th><?php echo $i18n->get('admin_work_value'); ?></th>
+                                        <th><?php echo $i18n->get('alert_percentage'); ?></th>
                                         <th style="width: 50px;"></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php if (empty($pageData['allCaseFees'])): ?>
-                                        <tr><td colspan="6">لا توجد بيانات لعرضها.</td></tr>
+                                        <tr><td colspan="6"><?php echo $i18n->get('no_data_to_display'); ?></td></tr>
                                     <?php else: ?>
                                         <?php foreach ($pageData['allCaseFees'] as $fee): ?>
                                             <tr>
@@ -174,7 +177,7 @@ function getLatestDegreeForFile($conn, $fileId) {
                                                             <!-- Edit functionality can be added here -->
                                                         <?php endif; ?>
                                                         <?php if ($row_permcheck['acccasecost_dperm'] === '1'): ?>
-                                                            <a href="deletecasecost.php?id=<?php echo safe_output($fee['id']); ?>" onclick="return confirm('هل أنت متأكد؟')">حذف</a>
+                                                            <a href="deletecasecost.php?id=<?php echo safe_output($fee['id']); ?>" onclick="return confirm('<?php echo $i18n->get('are_you_sure'); ?>')"><?php echo $i18n->get('delete'); ?></a>
                                                         <?php endif; ?>
                                                     </div>
                                                 </td>
@@ -186,7 +189,7 @@ function getLatestDegreeForFile($conn, $fileId) {
                         </div>
                         <footer class="table-footer">
                             <?php if ($row_permcheck['acccasecost_dperm'] === '1'): ?>
-                                <button type="submit" name="delete_selected" class="delete-selected">حذف المحدد</button>
+                                <button type="submit" name="delete_selected" class="delete-selected"><?php echo $i18n->get('delete_selected'); ?></button>
                             <?php endif; ?>
                         </footer>
                     </form>
@@ -199,7 +202,7 @@ function getLatestDegreeForFile($conn, $fileId) {
     <div id="addFeeModal" class="modal-overlay" style="display: <?php echo (isset($_GET['addmore'])) ? 'block' : 'none'; ?>">
         <div class="modal-content">
             <header class="modal-header">
-                <h4>إضافة / تعديل اتعاب القضية</h4>
+                <h4><?php echo $i18n->get('add_edit_case_fees'); ?></h4>
                 <span class="close-button" onclick="closeModal('addFeeModal')">&times;</span>
             </header>
             <div class="modal-body">
@@ -207,18 +210,18 @@ function getLatestDegreeForFile($conn, $fileId) {
                 <form id="searchForm" method="get" action="CasesFees.php">
                     <input type="hidden" name="addmore" value="1">
                     <div class="form-group radio-group">
-                        <label><input type="radio" name="SearchBY" value="FileNo" onchange="this.form.submit()" <?php if($searchBy === 'FileNo') echo 'checked'; ?>> رقم الملف</label>
-                        <label><input type="radio" name="SearchBY" value="Cli" onchange="this.form.submit()" <?php if($searchBy === 'Cli') echo 'checked'; ?>> اسم الموكل</label>
+                        <label><input type="radio" name="SearchBY" value="FileNo" onchange="this.form.submit()" <?php if($searchBy === 'FileNo') echo 'checked'; ?>> <?php echo $i18n->get('search_by_file_number'); ?></label>
+                        <label><input type="radio" name="SearchBY" value="Cli" onchange="this.form.submit()" <?php if($searchBy === 'Cli') echo 'checked'; ?>> <?php echo $i18n->get('search_by_client_name'); ?></label>
                     </div>
 
                     <?php if ($searchBy === 'FileNo'): ?>
                     <div class="form-group">
-                        <label for="Fno">رقم الملف</label>
+                        <label for="Fno"><?php echo $i18n->get('file_number'); ?></label>
                         <input type="number" class="form-input" id="Fno" name="Fno" value="<?php echo safe_output($fileNumber); ?>" onchange="this.form.submit()">
                     </div>
                     <?php elseif ($searchBy === 'Cli'): ?>
                     <div class="form-group">
-                        <label for="Mname">اسم الموكل</label>
+                        <label for="Mname"><?php echo $i18n->get('client_name'); ?></label>
                         <input type="text" class="form-input" id="Mname" name="Mname" value="<?php echo safe_output($clientName); ?>" onchange="this.form.submit()">
                     </div>
                     <?php endif; ?>
@@ -229,7 +232,7 @@ function getLatestDegreeForFile($conn, $fileId) {
                 <div class="table-responsive" style="margin-top: 20px; max-height: 200px; overflow-y: auto;">
                     <table class="info-table results-table">
                         <thead>
-                            <tr><th>رقم الملف</th><th>الموضوع</th><th>الموكل</th></tr>
+                            <tr><th><?php echo $i18n->get('file_number'); ?></th><th><?php echo $i18n->get('subject'); ?></th><th><?php echo $i18n->get('client'); ?></th></tr>
                         </thead>
                         <tbody>
                             <?php foreach($pageData['files'] as $file): ?>
@@ -250,24 +253,24 @@ function getLatestDegreeForFile($conn, $fileId) {
                 <form action="cfees_process.php" method="post">
                     <input type="hidden" name="fid" value="<?php echo safe_output($fileNumber); ?>">
                     <div class="form-group">
-                        <label for="fees">قيمة الاتعاب (AED)</label>
+                        <label for="fees"><?php echo $i18n->get('fees_value_aed'); ?></label>
                         <input type="number" id="fees" name="fees" class="form-input" value="<?php echo safe_output($pageData['selectedFileFees']['fees'] ?? '0'); ?>" required>
                     </div>
                     <div class="form-group">
-                        <label for="bm_fees">قيمة الاعمال الإدارية (AED)</label>
+                        <label for="bm_fees"><?php echo $i18n->get('admin_work_value_aed'); ?></label>
                         <input type="number" id="bm_fees" name="bm_fees" class="form-input" value="<?php echo safe_output($pageData['selectedFileFees']['bm_fees'] ?? '0'); ?>" required>
                     </div>
                     <div class="form-group">
-                        <label for="bm_alert">نسبة التنبيه (%)</label>
+                        <label for="bm_alert"><?php echo $i18n->get('alert_percentage_percent'); ?></label>
                         <input type="number" id="bm_alert" name="bm_alert" class="form-input" value="<?php echo safe_output($pageData['selectedFileFees']['bm_alert'] ?? '0'); ?>" required>
                     </div>
                     <footer class="modal-footer">
-                        <button type="submit" class="form-btn submit-btn">حفظ</button>
-                        <button type="button" class="form-btn cancel-btn" onclick="closeModal('addFeeModal')">إلغاء</button>
+                        <button type="submit" class="form-btn submit-btn"><?php echo $i18n->get('save'); ?></button>
+                        <button type="button" class="form-btn cancel-btn" onclick="closeModal('addFeeModal')"><?php echo $i18n->get('cancel'); ?></button>
                     </footer>
                 </form>
                 <?php elseif ($searchBy): ?>
-                    <p class="blink" style="color: red; margin-top: 20px;">يرجى تحديد ملف صالح من نتائج البحث.</p>
+                    <p class="blink" style="color: red; margin-top: 20px;"><?php echo $i18n->get('please_select_valid_file'); ?></p>
                 <?php endif; ?>
             </div>
         </div>

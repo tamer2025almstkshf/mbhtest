@@ -1,0 +1,15 @@
+ar:
+  attachments: "المرفقات"
+  search: "بحث..."
+  file_number: "رقم الملف"
+  folder_empty_or_not_found: "المجلد فارغ أو غير موجود."
+  access_denied_view_page: "تم رفض الوصول: ليس لديك إذن لعرض هذه الصفحة."
+  access_denied_invalid_directory: "تم رفض الوصول: الدليل المحدد غير صالح."
+
+en:
+  attachments: "Attachments"
+  search: "Search..."
+  file_number: "File Number"
+  folder_empty_or_not_found: "Folder is empty or not found."
+  access_denied_view_page: "Access Denied: You do not have permission to view this page."
+  access_denied_invalid_directory: "Access Denied: Invalid directory specified."

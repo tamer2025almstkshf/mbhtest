@@ -17,6 +17,9 @@
 include_once 'connection.php';
 include_once 'login_check.php';
 include_once 'safe_output.php';
+include_once 'src/I18n.php';
+
+$i18n = new I18n('translations/ClientCaseReport.yaml');
 
 // 2. INPUT VALIDATION & INITIALIZATION
 // =============================================================================
@@ -24,7 +27,7 @@ $clientId = isset($_GET['cid']) ? (int)$_GET['cid'] : 0;
 
 if ($clientId <= 0) {
     http_response_code(400);
-    die('Invalid or missing Client ID.');
+    die($i18n->get('invalid_client_id'));
 }
 
 // 3. DATA FETCHING
@@ -39,7 +42,7 @@ $stmt->close();
 
 if (!$client) {
     http_response_code(404);
-    die('Client not found.');
+    die($i18n->get('client_not_found'));
 }
 
 // Fetch all files associated with the client
@@ -116,42 +119,47 @@ function numberToRoman($number) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo $i18n->getLocale(); ?>">
 <head>
     <meta charset="UTF-8">
-    <title>Client Case Report</title>
+    <title><?php echo $i18n->get('client_case_report'); ?></title>
     <link href="css/report_styles.css" rel="stylesheet">
 </head>
 <body>
     <header>
-        <h1>Client Case Report / <?php echo safe_output($client['engname']); ?></h1>
+        <h1><?php echo $i18n->get('client_case_report'); ?> / <?php echo safe_output($client['engname']); ?></h1>
     </header>
 
     <main class="content">
-        <p>This report aims to document the time allocated to complete the tasks assigned to our legal team, record the reviews conducted with relevant authorities, and detail the efforts exerted in the cases entrusted to us.</p>
+        <p><?php echo $i18n->get('report_documentation_aim'); ?></p>
         
         <section>
-            <h2>A. Estimation of Legal Fees:</h2>
-            <p>Legal fees per hour for each category of legal specialists have been estimated as follows:</p>
+            <h2><?php echo $i18n->get('estimation_of_legal_fees'); ?></h2>
+            <p><?php echo $i18n->get('legal_fees_estimation_details'); ?></p>
             <ul>
-                <li>Lawyers: <strong>AED 3,000 per hour.</strong></li>
-                <li>Legal Consultants: <strong>AED 2,500 per hour.</strong></li>
-                <li>Legal Researchers: <strong>AED 2,000 per hour.</strong></li>
+                <li><?php echo $i18n->get('lawyers'); ?>: <strong>3,000 <?php echo $i18n->get('aed_per_hour'); ?></strong></li>
+                <li><?php echo $i18n->get('legal_consultants'); ?>: <strong>2,500 <?php echo $i18n->get('aed_per_hour'); ?></strong></li>
+                <li><?php echo $i18n->get('legal_researchers'); ?>: <strong>2,000 <?php echo $i18n->get('aed_per_hour'); ?></strong></li>
             </ul>
         </section>
         
         <section>
-            <h2>B. Cases Covered in the Report:</h2>
+            <h2><?php echo $i18n->get('cases_covered_in_report'); ?></h2>
             <?php if (empty($files)): ?>
-                <p>No cases found for this client.</p>
+                <p><?php echo $i18n->get('no_cases_found'); ?></p>
             <?php else: ?>
                 <?php foreach ($files as $index => $file): ?>
                     <?php if ($file['latest_session']): ?>
                         <h3 class="case-title">
                             <?php echo numberToRoman($index + 1); ?>.
                             <a href="#" onclick="window.open('CasePreview.php?fid=<?php echo safe_output($file['file_id']); ?>','','resizable=yes,scrollbars=yes,width=800,height=800'); return false;">
-                                <?php echo safe_output($file['eng_file_type']); ?> Case No. <?php echo safe_output($file['latest_session']['case_num'] . '/' . $file['latest_session']['year']); ?>
-                                – Charge: <?php echo safe_output($file['file_subject']); ?> (File No. <?php echo safe_output($file['file_id']); ?>)
+                                <?php 
+                                    echo str_replace(
+                                        ['{case_type}', '{case_number}', '{charge}', '{file_number}'],
+                                        [safe_output($file['eng_file_type']), safe_output($file['latest_session']['case_num'] . '/' . $file['latest_session']['year']), safe_output($file['file_subject']), safe_output($file['file_id'])],
+                                        $i18n->get('case_title_format')
+                                    );
+                                ?>
                             </a>
                         </h3>
                     <?php endif; ?>
@@ -161,39 +169,39 @@ function numberToRoman($number) {
 
         <!-- Static content for demonstration purposes -->
         <section>
-            <h2>C. Detailed Actions and Timeline:</h2>
-            <p><strong>Initial Charges Upon Receipt:</strong> Extortion or threats using an information network or technological means.</p>
-            <p><strong>Referral Order:</strong> Accusation of committing a felony against a person using information technology (WhatsApp), specifically stating, “I will kill you, you must die.”</p>
-            <p><strong>Judgment issued on 10/12/2024 (In Absentia):</strong> The defendant was fined AED 5,000, and the civil claim was referred to the competent civil court. Despite falling under the aforementioned provisions, the trial proceeded under Articles 42/1, 56, and 59/1 (legitimate self-defense rights).</p>
-            <p><strong>Appeal No. 13817/2024:</strong> A request was submitted to the Public Prosecution to appeal the issued judgment, registered under Appeal No. 2024/13817, with a hearing scheduled for 20/03/2025.</p>
+            <h2><?php echo $i18n->get('detailed_actions_and_timeline'); ?></h2>
+            <p><strong><?php echo $i18n->get('initial_charges_upon_receipt'); ?></strong> <?php echo $i18n->get('extortion_threats_details'); ?></p>
+            <p><strong><?php echo $i18n->get('referral_order'); ?></strong> <?php echo $i18n->get('felony_accusation_details'); ?></p>
+            <p><strong><?php echo $i18n->get('judgment_in_absentia'); ?></strong> <?php echo $i18n->get('judgment_details'); ?></p>
+            <p><strong><?php echo str_replace('{appeal_number}', '13817/2024', $i18n->get('appeal_no')); ?></strong> <?php echo str_replace('{appeal_number}', '2024/13817', $i18n->get('appeal_request_details')); ?></p>
             
             <table class="report-table">
                 <thead>
                     <tr>
-                        <th>No.</th>
-                        <th>Date</th>
-                        <th>Action Taken</th>
-                        <th>Hours</th>
-                        <th>Assigned Staff</th>
-                        <th>Notes</th>
+                        <th><?php echo $i18n->get('no'); ?></th>
+                        <th><?php echo $i18n->get('date'); ?></th>
+                        <th><?php echo $i18n->get('action_taken'); ?></th>
+                        <th><?php echo $i18n->get('hours'); ?></th>
+                        <th><?php echo $i18n->get('assigned_staff'); ?></th>
+                        <th><?php echo $i18n->get('notes'); ?></th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
                         <td>1</td>
                         <td>03/11/2024</td>
-                        <td>Police Station Review</td>
+                        <td><?php echo $i18n->get('police_station_review'); ?></td>
                         <td>2.5</td>
                         <td>Mr. Ashraf</td>
-                        <td>Visited Al Barsha Police Station to attempt to file a criminal report; unsuccessful due to a smart system malfunction.</td>
+                        <td><?php echo $i18n->get('police_station_review_details'); ?></td>
                     </tr>
                     <tr>
                         <td>2</td>
                         <td>04/11/2024</td>
-                        <td>Investigation Hearing</td>
+                        <td><?php echo $i18n->get('investigation_hearing'); ?></td>
                         <td>3</td>
                         <td>Mr. Suhail</td>
-                        <td>Received a message from the client regarding their attendance at the Public Prosecution for an investigation session related to Case No. 21086/2024.</td>
+                        <td><?php echo str_replace('{case_number}', '21086/2024', $i18n->get('investigation_hearing_details')); ?></td>
                     </tr>
                 </tbody>
             </table>
@@ -203,8 +211,8 @@ function numberToRoman($number) {
     <footer>
         <div class="line"></div>
         <div class="footer-content">
-            <span>MBH Advocates & Legal Consultants</span>
-            <span class="page-number">Page <span class="number"></span></span>
+            <span><?php echo $i18n->get('footer_firm_name'); ?></span>
+            <span class="page-number"><?php echo $i18n->get('page'); ?> <span class="number"></span></span>
         </div>
     </footer>
     

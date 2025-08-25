@@ -13,6 +13,9 @@
 include_once 'connection.php';
 include_once 'login_check.php'; // Ensures the user is logged in
 include_once 'safe_output.php';
+include_once 'src/I18n.php';
+
+$i18n = new I18n('translations/CounselNotes.yaml');
 
 // 2. INPUT VALIDATION & INITIALIZATION
 // =============================================================================
@@ -20,7 +23,7 @@ $noteId = isset($_GET['nid']) ? (int)$_GET['nid'] : 0;
 
 if ($noteId <= 0) {
     http_response_code(400);
-    die('Invalid Note ID provided.');
+    die($i18n->get('invalid_note_id'));
 }
 
 // 3. DATA FETCHING
@@ -38,7 +41,7 @@ $stmt->close();
 
 if (!$noteData) {
     http_response_code(404);
-    die('Note not found.');
+    die($i18n->get('note_not_found'));
 }
 
 // Fetch the associated file details using the file_id from the note
@@ -53,7 +56,7 @@ $stmt->close();
 if (!$fileData) {
     // This indicates a data integrity issue (a note without a file), but we should handle it.
     http_response_code(404);
-    die('Associated file not found for this note.');
+    die($i18n->get('associated_file_not_found'));
 }
 
 // 4. HELPER FUNCTIONS
@@ -69,12 +72,12 @@ function getFilePrefix($place) {
 
 ?>
 <!DOCTYPE html>
-<html dir="rtl" lang="ar">
+<html dir="<?php echo $i18n->getDirection(); ?>" lang="<?php echo $i18n->getLocale(); ?>">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ملاحظات على الملف</title>
+    <title><?php echo $i18n->get('notes_on_file'); ?></title>
     <link href="css/styles.css" rel="stylesheet"> <!-- Assuming a general stylesheet -->
     <style>
         body {
@@ -123,7 +126,7 @@ function getFilePrefix($place) {
 
     <div class="note-container">
         <header class="note-header">
-            ملاحظات للملف رقم: 
+            <?php echo $i18n->get('notes_for_file_number'); ?>
             <span class="file-id-prefix">
                 <?php echo safe_output(getFilePrefix($fileData['frelated_place'])); ?>
             </span>
@@ -137,7 +140,7 @@ function getFilePrefix($place) {
         <footer class="note-footer">
             <span><?php echo safe_output($noteData['timestamp']); ?></span>
             <?php if (!empty($noteData['doneby'])): ?>
-                <span> | بواسطة: <?php echo safe_output($noteData['doneby']); ?></span>
+                <span> | <?php echo $i18n->get('by'); ?>: <?php echo safe_output($noteData['doneby']); ?></span>
             <?php endif; ?>
         </footer>
     </div>

@@ -1,12 +1,16 @@
 <?php
     include_once 'connection.php';
     include_once 'login_check.php';
-    include_once 'permissions_check.php'; // Assuming a generic permission check file
+    include_once 'permissions_check.php';
+    include_once 'src/I18n.php';
+
+    $i18n = new I18n('translations/Attachments.yaml');
+
 
     // --- 1. Permission Check ---
     // Replace 'attachments_rperm' with the actual permission required for this page.
     if (empty($perm_row['attachments_rperm'])) {
-        die("Access Denied: You do not have permission to view this page.");
+        die($i18n->get('access_denied_view_page'));
     }
 
     // --- 2. Path Traversal Prevention ---
@@ -22,15 +26,15 @@
 
     // Final security check: ensure the resolved path is still within the base directory.
     if ($resolved_path === false || strpos($resolved_path, $base_dir) !== 0) {
-        die("Access Denied: Invalid directory specified.");
+        die($i18n->get('access_denied_invalid_directory'));
     }
 
 ?>
 <!DOCTYPE html>
-<html dir="rtl">
+<html dir="<?php echo $i18n->getDirection(); ?>">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title>المرفقات</title>
+    <title><?php echo $i18n->get('attachments'); ?></title>
     <link rel="stylesheet" type="text/css" href="css/style.css" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
@@ -43,11 +47,11 @@
                     <thead>
                         <tr class="header_table">
                             <th colspan="4" align="center">
-                                <input type="text" placeholder="بحث..." dir="ltr" id="SearchBox" class="form-input">
+                                <input type="text" placeholder="<?php echo $i18n->get('search'); ?>" dir="ltr" id="SearchBox" class="form-input">
                             </th>
                         </tr>
                         <tr class="header_table">
-                            <th colspan="4" align="center">رقم الملف</th>
+                            <th colspan="4" align="center"><?php echo $i18n->get('file_number'); ?></th>
                         </tr>
                     </thead>
                     <tbody id="table1">
@@ -78,7 +82,7 @@
                             else:
                         ?>
                         <tr>
-                            <td colspan="4" style="text-align: center; padding: 20px;">المجلد فارغ أو غير موجود.</td>
+                            <td colspan="4" style="text-align: center; padding: 20px;"><?php echo $i18n->get('folder_empty_or_not_found'); ?></td>
                         </tr>
                         <?php
                             endif;

@@ -2,15 +2,18 @@
     include_once 'connection.php';
     include_once 'login_check.php';
     include_once 'permissions_check.php';
+    include_once 'src/I18n.php';
+    
+    $i18n = new I18n('translations/ArchivedFile.yaml');
 
     // --- 1. Permission & Input Validation ---
     if (empty($perm_row['archives_rperm'])) {
-        die("Access Denied: You do not have permission to view archived files.");
+        die($i18n->get('access_denied_view_archived'));
     }
 
     $file_id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
     if (!$file_id) {
-        die("Invalid file ID provided.");
+        die($i18n->get('invalid_file_id'));
     }
 
     // --- 2. Authorization (IDOR Prevention) ---
@@ -23,14 +26,14 @@
     $stmt_file->close();
 
     if (!$file_details || $file_details['file_status'] !== 'مؤرشف') {
-        die("Archived file not found or is not in an archived state.");
+        die($i18n->get('archived_file_not_found'));
     }
     
     // Check access for secret files
     if ($admin != 1 && $file_details['secret_folder'] == 1) {
         $allowed_emps = array_filter(array_map('trim', explode(',', $file_details['secret_emps'])));
         if (!in_array($_SESSION['id'], $allowed_emps)) {
-            die("Access Denied: You are not authorized to view this specific file.");
+            die($i18n->get('access_denied_view_specific_file'));
         }
     }
     // [Placeholder]: Add other business logic here to check if the user is assigned to this case.
@@ -63,10 +66,10 @@
     }
 ?>
 <!DOCTYPE html>
-<html dir="rtl">
+<html dir="<?php echo $i18n->getDirection(); ?>">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>ملف مؤرشف - ملاحظات</title>
+    <title><?php echo $i18n->get('archived_file_notes'); ?></title>
     <link rel="stylesheet" type="text/css" href="css/style.css" />
     <style>
         .note-container { border: 1px solid #ccc; padding: 10px; margin-bottom: 15px; border-radius: 5px; }
@@ -78,12 +81,12 @@
 <div class="container">
     <?php include_once 'sidebar.php'; ?>
     <div class="l_data">
-        <h2>ملاحظات الملف المؤرشف رقم: <?php echo htmlspecialchars($file_id, ENT_QUOTES, 'UTF-8'); ?></h2>
+        <h2><?php echo $i18n->get('archived_file_notes_for_id'); ?> <?php echo htmlspecialchars($file_id, ENT_QUOTES, 'UTF-8'); ?></h2>
 
         <?php if (!empty($perm_row['note_aperm']) || ($edit_note_id && !empty($perm_row['note_eperm']))): ?>
             <!-- Note Add/Edit Form -->
             <div class="note-form">
-                <h3><?php echo $edit_note_id ? 'تعديل ملاحظة' : 'إضافة ملاحظة جديدة'; ?></h3>
+                <h3><?php echo $edit_note_id ? $i18n->get('edit_note') : $i18n->get('add_new_note'); ?></h3>
                 <form action="<?php echo $edit_note_id ? 'noteedit_secure.php' : 'noteadd_secure.php'; ?>" method="post">
                     <input type="hidden" name="id" value="<?php echo htmlspecialchars($file_id, ENT_QUOTES, 'UTF-8'); ?>">
                     <?php if ($edit_note_id): ?>
@@ -91,9 +94,9 @@
                     <?php endif; ?>
                     <textarea style="width:98%;" name="note" rows="10" required><?php echo htmlspecialchars($edit_note_content, ENT_QUOTES, 'UTF-8'); ?></textarea>
                     <br>
-                    <input type="submit" value="حفظ" class="button" />
+                    <input type="submit" value="<?php echo $i18n->get('save'); ?>" class="button" />
                     <?php if ($edit_note_id): ?>
-                        <a href="ArchivedFile.php?id=<?php echo htmlspecialchars($file_id, ENT_QUOTES, 'UTF-8'); ?>" class="button">إلغاء التعديل</a>
+                        <a href="ArchivedFile.php?id=<?php echo htmlspecialchars($file_id, ENT_QUOTES, 'UTF-8'); ?>" class="button"><?php echo $i18n->get('cancel_edit'); ?></a>
                     <?php endif; ?>
                 </form>
             </div>
@@ -102,15 +105,15 @@
         
         <!-- Display Notes -->
         <div class="notes-list">
-            <h3>الملاحظات المسجلة</h3>
+            <h3><?php echo $i18n->get('registered_notes'); ?></h3>
             <?php if (empty($notes)): ?>
-                <p>لا توجد ملاحظات على هذا الملف.</p>
+                <p><?php echo $i18n->get('no_notes_for_this_file'); ?></p>
             <?php else: ?>
                 <?php foreach ($notes as $note): ?>
                     <div class="note-container">
                         <div class="note-meta">
-                            بتاريخ: <?php echo htmlspecialchars($note['timestamp'], ENT_QUOTES, 'UTF-8'); ?> | 
-                            بواسطة: <?php echo htmlspecialchars($note['doneby'], ENT_QUOTES, 'UTF-8'); ?>
+                            <?php echo $i18n->get('date'); ?> <?php echo htmlspecialchars($note['timestamp'], ENT_QUOTES, 'UTF-8'); ?> | 
+                            <?php echo $i18n->get('by'); ?> <?php echo htmlspecialchars($note['doneby'], ENT_QUOTES, 'UTF-8'); ?>
                         </div>
                         <div class="note-content">
                             <?php echo nl2br(htmlspecialchars($note['note'], ENT_QUOTES, 'UTF-8')); ?>
@@ -118,7 +121,7 @@
                         <div class="note-actions">
                             <?php if (!empty($perm_row['note_eperm'])): ?>
                                 <a href="ArchivedFile.php?id=<?php echo htmlspecialchars($file_id, ENT_QUOTES, 'UTF-8'); ?>&action=notedit&nid=<?php echo htmlspecialchars($note['id'], ENT_QUOTES, 'UTF-8'); ?>">
-                                    <img src="images/edit.png" alt="تعديل" border="0"/>
+                                    <img src="images/edit.png" alt="<?php echo $i18n->get('edit'); ?>" border="0"/>
                                 </a>
                             <?php endif; ?>
                         </div>

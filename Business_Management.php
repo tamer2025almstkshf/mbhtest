@@ -18,6 +18,9 @@
 include_once 'connection.php';
 include_once 'login_check.php'; // Assumes this sets up the user session
 include_once 'safe_output.php'; // For the safe_output function
+include_once 'src/I18n.php';
+
+$i18n = new I18n('translations/Business_Management.yaml');
 
 // 2. INPUT VALIDATION & INITIALIZATION
 // =============================================================================
@@ -138,12 +141,12 @@ function getFilePrefix($place) {
 // 4. PREPARE VARIABLES FOR VIEW
 // =============================================================================
 $formAction = $isEditMode ? 'taedit.php' : 'tadd.php';
-$pageTitle = $isEditMode ? 'تعديل عمل إداري' : 'إضافة عمل إداري';
-$submitButtonText = $isEditMode ? 'حفظ + تعديل البيانات' : 'حفظ وتخزين البيانات';
+$pageTitle = $isEditMode ? $i18n->get('edit_administrative_task') : $i18n->get('add_administrative_task');
+$submitButtonText = $isEditMode ? $i18n->get('save_and_modify_data') : $i18n->get('save_and_store_data');
 
 ?>
 <!DOCTYPE html>
-<html dir="rtl" lang="ar">
+<html dir="<?php echo $i18n->getDirection(); ?>" lang="<?php echo $i18n->getLocale(); ?>">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -175,14 +178,14 @@ $submitButtonText = $isEditMode ? 'حفظ + تعديل البيانات' : 'حف
         <thead>
             <tr>
                 <th width="16%">&nbsp;</th>
-                <th width="58%" align="right"><b><font color="#4b1807" style="font-size:16px">الاعمال الإدارية</font></b></th>
+                <th width="58%" align="right"><b><font color="#4b1807" style="font-size:16px"><?php echo $i18n->get('administrative_tasks'); ?></font></b></th>
                 <th width="26%" rowspan="8" align="center" valign="top">
-                    <p>الموكل: <?php echo safe_output($fileDetails['client_name']); ?></p>
-                    <p>الموضوع: <?php echo safe_output($fileDetails['file_subject']); ?></p>
+                    <p><?php echo $i18n->get('client'); ?>: <?php echo safe_output($fileDetails['client_name']); ?></p>
+                    <p><?php echo $i18n->get('subject'); ?>: <?php echo safe_output($fileDetails['file_subject']); ?></p>
                 </th>
             </tr>
             <tr>
-                <th align="left">رقم الملف :</th>
+                <th align="left"><?php echo $i18n->get('file_number'); ?></th>
                 <th align="right" dir="ltr" style="font-size:18px; color:#00F">
                     <font color="#FF0000"><?php echo safe_output(getFilePrefix($fileDetails['frelated_place'])); ?></font>
                     <?php echo safe_output($fileDetails['file_id']); ?>
@@ -191,10 +194,10 @@ $submitButtonText = $isEditMode ? 'حفظ + تعديل البيانات' : 'حف
         </thead>
         <tbody>
             <tr>
-                <th align="left"><label for="flegal_researcher">الباحث القانوني المكلف :</label></th>
+                <th align="left"><label for="flegal_researcher"><?php echo $i18n->get('assigned_legal_researcher'); ?></label></th>
                 <td align="right">
                     <select name="flegal_researcher" id="flegal_researcher" dir="rtl" style="width:50%;" required>
-                        <option value="">-- اختر --</option>
+                        <option value=""><?php echo $i18n->get('select'); ?></option>
                         <?php foreach ($legalResearchers as $researcher): ?>
                             <option value="<?php echo safe_output($researcher['id']); ?>" <?php echo ($researcher['id'] == $taskToEdit['employee_id']) ? 'selected' : ''; ?>>
                                 <?php echo safe_output($researcher['name']); ?>
@@ -205,10 +208,10 @@ $submitButtonText = $isEditMode ? 'حفظ + تعديل البيانات' : 'حف
                 </td>
             </tr>
             <tr>
-                <th align="left"><label for="type_name">نوع العمل :</label></th>
+                <th align="left"><label for="type_name"><?php echo $i18n->get('task_type'); ?></label></th>
                 <td align="right">
                     <select name="type_name" id="type_name" dir="rtl" style="width:50%;" required>
-                         <option value="">-- اختر --</option>
+                         <option value=""><?php echo $i18n->get('select'); ?></option>
                         <?php foreach ($jobTypes as $job): ?>
                             <option value="<?php echo safe_output($job['id']); ?>" <?php echo ($job['id'] == $taskToEdit['task_type']) ? 'selected' : ''; ?>>
                                 <?php echo safe_output($job['job_name']); ?>
@@ -219,10 +222,10 @@ $submitButtonText = $isEditMode ? 'حفظ + تعديل البيانات' : 'حف
                 </td>
             </tr>
             <tr>
-                <th align="left"><label for="degree_id">درجة التقاضي :</label></th>
+                <th align="left"><label for="degree_id"><?php echo $i18n->get('degree_of_litigation'); ?></label></th>
                 <td align="right">
                     <select name="degree_id" id="degree_id" dir="rtl" style="width:50%;">
-                        <option value="0">-- لا يوجد --</option>
+                        <option value="0"><?php echo $i18n->get('none'); ?></option>
                         <?php foreach ($fileDegrees as $degree): ?>
                             <option value="<?php echo safe_output($degree['id']); ?>" <?php echo ($degree['id'] == $taskToEdit['degree']) ? 'selected' : ''; ?>>
                                 <?php echo safe_output("{$degree['case_num']}/{$degree['file_year']}-{$degree['degree']}"); ?>
@@ -232,20 +235,20 @@ $submitButtonText = $isEditMode ? 'حفظ + تعديل البيانات' : 'حف
                 </td>
             </tr>
             <tr>
-                <th align="left">الاهمية :</th>
+                <th align="left"><?php echo $i18n->get('importance'); ?></th>
                 <td align="right">
-                    <label><input type="radio" name="priority" value="0" style="border:none" <?php echo ($taskToEdit['priority'] == '0') ? 'checked' : ''; ?>> <font color="#009900">عادي</font></label>
-                    <label><input type="radio" name="priority" value="1" style="border:none" <?php echo ($taskToEdit['priority'] == '1') ? 'checked' : ''; ?>> <font color="#FF0000">عاجل</font></label>
+                    <label><input type="radio" name="priority" value="0" style="border:none" <?php echo ($taskToEdit['priority'] == '0') ? 'checked' : ''; ?>> <font color="#009900"><?php echo $i18n->get('normal'); ?></font></label>
+                    <label><input type="radio" name="priority" value="1" style="border:none" <?php echo ($taskToEdit['priority'] == '1') ? 'checked' : ''; ?>> <font color="#FF0000"><?php echo $i18n->get('urgent'); ?></font></label>
                 </td>
             </tr>
             <tr>
-                <th align="left"><label for="date">تاريخ تنفيذ العمل :</label></th>
+                <th align="left"><label for="date"><?php echo $i18n->get('task_due_date'); ?></label></th>
                 <td align="right">
                     <input type="date" name="date" id="date" value="<?php echo safe_output($taskToEdit['duedate']); ?>" required>
                 </td>
             </tr>
             <tr>
-                <th align="left" valign="top"><label for="details">التفاصيل:</label></th>
+                <th align="left" valign="top"><label for="details"><?php echo $i18n->get('details'); ?></label></th>
                 <td align="right">
                     <textarea dir="rtl" id="details" wrap="physical" rows="3" style="width:98%" name="details"><?php echo safe_output($taskToEdit['details']); ?></textarea>
                 </td>
@@ -254,7 +257,7 @@ $submitButtonText = $isEditMode ? 'حفظ + تعديل البيانات' : 'حف
                 <th>&nbsp;</th>
                 <td align="right">
                     <input type="submit" value="<?php echo safe_output($submitButtonText); ?>" class="button">
-                    <input type="button" value="مسح الحقول" class="button" onclick="location.href='Business_Management.php?fid=<?php echo safe_output($fileId); ?>'">
+                    <input type="button" value="<?php echo $i18n->get('clear_fields'); ?>" class="button" onclick="location.href='Business_Management.php?fid=<?php echo safe_output($fileId); ?>'">
                 </td>
             </tr>
         </tbody>
@@ -266,20 +269,20 @@ $submitButtonText = $isEditMode ? 'حفظ + تعديل البيانات' : 'حف
 <table class="table-tasks">
     <thead>
         <tr>
-            <th>درجة التقاضي</th>
-            <th>نوع العمل الإداري</th>
-            <th>الموظف المكلف</th>
-            <th>ت.التكليف</th>
-            <th>التفاصيل</th>
-            <th>م.ت/ الإدخال</th>
-            <th>تعديل</th>
-            <th>حذف</th>
+            <th><?php echo $i18n->get('degree_of_litigation_header'); ?></th>
+            <th><?php echo $i18n->get('administrative_task_type_header'); ?></th>
+            <th><?php echo $i18n->get('assigned_employee_header'); ?></th>
+            <th><?php echo $i18n->get('assignment_date_header'); ?></th>
+            <th><?php echo $i18n->get('details_header'); ?></th>
+            <th><?php echo $i18n->get('entry_date_by_header'); ?></th>
+            <th><?php echo $i18n->get('edit_header'); ?></th>
+            <th><?php echo $i18n->get('delete_header'); ?></th>
         </tr>
     </thead>
     <tbody>
         <?php if (empty($existingTasks)): ?>
             <tr>
-                <td colspan="8">لا توجد أعمال إدارية مسجلة لهذا الملف.</td>
+                <td colspan="8"><?php echo $i18n->get('no_administrative_tasks_registered'); ?></td>
             </tr>
         <?php else: ?>
             <?php foreach ($existingTasks as $task): ?>
@@ -289,7 +292,7 @@ $submitButtonText = $isEditMode ? 'حفظ + تعديل البيانات' : 'حف
                     <td>
                         <?php echo safe_output($task['employee_name']); ?>
                         <?php if ($task['priority'] == '1'): ?>
-                            <br><img src="images/urgent2-300x220.jpg" alt="Urgent" class="urgent-icon">
+                            <br><img src="images/urgent2-300x220.jpg" alt="<?php echo $i18n->get('urgent'); ?>" class="urgent-icon">
                         <?php endif; ?>
                     </td>
                     <td><?php echo safe_output($task['duedate']); ?></td>
@@ -297,12 +300,12 @@ $submitButtonText = $isEditMode ? 'حفظ + تعديل البيانات' : 'حف
                     <td><?php echo safe_output($task['timestamp'] . ' ' . $task['responsible_name']); ?></td>
                     <td>
                         <a href="Business_Management.php?fid=<?php echo safe_output($fileId); ?>&tid=<?php echo safe_output($task['id']); ?>">
-                            <img src="images/EditB.png" alt="Edit" border="0" class="action-icon">
+                            <img src="images/EditB.png" alt="<?php echo $i18n->get('edit_header'); ?>" border="0" class="action-icon">
                         </a>
                     </td>
                     <td>
-                        <a href="tdel.php?fid=<?php echo safe_output($fileId); ?>&tid=<?php echo safe_output($task['id']); ?>" onclick="return confirm('هل أنت متأكد من رغبتك في حذف هذا البند؟');">
-                            <img src="images/delete.png" alt="Delete" border="0" class="action-icon">
+                        <a href="tdel.php?fid=<?php echo safe_output($fileId); ?>&tid=<?php echo safe_output($task['id']); ?>" onclick="return confirm('<?php echo $i18n->get('confirm_delete_item'); ?>');">
+                            <img src="images/delete.png" alt="<?php echo $i18n->get('delete_header'); ?>" border="0" class="action-icon">
                         </a>
                     </td>
                 </tr>

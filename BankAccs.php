@@ -9,6 +9,9 @@
 // =============================================================================
 require_once __DIR__ . '/bootstrap.php';
 include_once 'permissions_check.php'; // Still needed for now
+use App\I18n;
+
+I18n::load('translations/BankAccs.yaml');
 
 // 2. PERMISSIONS CHECK
 // =============================================================================
@@ -18,7 +21,7 @@ $can_edit_accounts = ($row_permcheck['accbankaccs_eperm'] === '1');
 $can_delete_accounts = ($row_permcheck['accbankaccs_dperm'] === '1');
 
 if (!$can_view_accounts) {
-    die(__('access_denied_message'));
+    die(I18n::get('access_denied_message'));
 }
 
 // 3. SECURE DATA RETRIEVAL FOR MODALS
@@ -55,13 +58,12 @@ if ($attach_id) {
 
 // 4. RENDER PAGE
 // =============================================================================
-use App\I18n;
 $currentLocale = I18n::getLocale();
 ?>
 <!DOCTYPE html>
 <html dir="<?php echo ($currentLocale === 'ar') ? 'rtl' : 'ltr'; ?>" lang="<?php echo $currentLocale; ?>">
 <head>
-    <title><?php echo __('bank_accounts'); ?></title>
+    <title><?php echo I18n::get('bank_accounts'); ?></title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <link href="css/styles.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -74,9 +76,9 @@ $currentLocale = I18n::getLocale();
             <div class="web-page">
                 <div class="table-container">
                     <div class="table-header">
-                        <h3><?php echo __('bank_accounts'); ?></h3>
+                        <h3><?php echo I18n::get('bank_accounts'); ?></h3>
                         <?php if ($can_add_accounts): ?>
-                            <button onclick="location.href='BankAccs.php?add=1'"><?php echo __('add_new_account'); ?></button>
+                            <button onclick="location.href='BankAccs.php?add=1'"><?php echo I18n::get('add_new_account'); ?></button>
                         <?php endif; ?>
                     </div>
 
@@ -85,7 +87,7 @@ $currentLocale = I18n::getLocale();
                     <div class="modal-overlay" style="display: block;">
                         <div class="modal-content">
                             <div class="addc-header">
-                                <h4><?php echo $edit_mode ? __('edit_bank_account') : __('add_new_bank_account'); ?></h4>
+                                <h4><?php echo $edit_mode ? I18n::get('edit_bank_account') : I18n::get('add_new_bank_account'); ?></h4>
                                 <a href="BankAccs.php" class="close-button">&times;</a>
                             </div>
                             <form action="<?php echo $edit_mode ? 'editbankacc.php' : 'bankacc.php'; ?>" method="post" enctype="multipart/form-data">
@@ -93,16 +95,16 @@ $currentLocale = I18n::getLocale();
                                     <input type="hidden" name="id" value="<?php echo htmlspecialchars($edit_data['id'], ENT_QUOTES, 'UTF-8'); ?>">
                                 <?php endif; ?>
                                 <div class="addc-body">
-                                    <p><?php echo __('bank_name'); ?> <font color="red">*</font></p>
+                                    <p><?php echo I18n::get('bank_name'); ?> <font color="red">*</font></p>
                                     <input class="form-input" name="name" value="<?php echo htmlspecialchars($edit_data['name'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" type="text" required>
-                                    <p><?php echo __('account_number'); ?> <font color="red">*</font></p>
+                                    <p><?php echo I18n::get('account_number'); ?> <font color="red">*</font></p>
                                     <input class="form-input" name="account_no" value="<?php echo htmlspecialchars($edit_data['account_no'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" type="text" required>
-                                    <p><?php echo __('notes'); ?></p>
+                                    <p><?php echo I18n::get('notes'); ?></p>
                                     <textarea class="form-input" name="notes" rows="2"><?php echo htmlspecialchars($edit_data['notes'] ?? '', ENT_QUOTES, 'UTF-8'); ?></textarea>
                                 </div>
                                 <div class="addc-footer">
-                                    <button type="submit" class="form-btn submit-btn"><?php echo __('save'); ?></button>
-                                    <a href="BankAccs.php" class="form-btn cancel-btn"><?php echo __('cancel'); ?></a>
+                                    <button type="submit" class="form-btn submit-btn"><?php echo I18n::get('save'); ?></button>
+                                    <a href="BankAccs.php" class="form-btn cancel-btn"><?php echo I18n::get('cancel'); ?></a>
                                 </div>
                             </form>
                         </div>
@@ -114,22 +116,22 @@ $currentLocale = I18n::getLocale();
                     <div class="modal-overlay" style="display: block;">
                         <div class="modal-content">
                              <div class="addc-header">
-                                <h4 style="margin: auto"><?php echo __('account_attachments'); ?></h4>
+                                <h4 style="margin: auto"><?php echo I18n::get('account_attachments'); ?></h4>
                                 <a href="BankAccs.php" class="close-button">&times;</a>
                             </div>
                             <div class="notes-body" style="padding: 10px; text-align: right;">
                                 <?php if (!empty($attachment_data['receipt_photo'])): ?>
                                     <div class="attachment-row">
-                                        <p><?php echo __('receipt'); ?>:</p>
+                                        <p><?php echo I18n::get('receipt'); ?>:</p>
                                         <a href="<?php echo htmlspecialchars($attachment_data['receipt_photo'], ENT_QUOTES, 'UTF-8'); ?>" target="_blank">
                                             <?php echo htmlspecialchars(basename($attachment_data['receipt_photo']), ENT_QUOTES, 'UTF-8'); ?>
                                         </a>
                                         <?php if ($can_delete_accounts): ?>
-                                            <a href="baattachdel.php?id=<?php echo $attachment_data['id']; ?>&del=receipt_photo" onclick="return confirm('<?php echo __('confirm_delete'); ?>');">[<?php echo __('delete'); ?>]</a>
+                                            <a href="baattachdel.php?id=<?php echo $attachment_data['id']; ?>&del=receipt_photo" onclick="return confirm('<?php echo I18n::get('confirm_delete'); ?>');">[<?php echo I18n::get('delete'); ?>]</a>
                                         <?php endif; ?>
                                     </div>
                                 <?php else: ?>
-                                    <p><?php echo __('no_attachments_found'); ?></p>
+                                    <p><?php echo I18n::get('no_attachments_found'); ?></p>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -138,15 +140,15 @@ $currentLocale = I18n::getLocale();
 
                     <!-- Bank Accounts Table -->
                     <div class="table-body">
-                        <form action="delbankaccs.php" method="post" onsubmit="return confirm('<?php echo __('confirm_delete_selected_accounts'); ?>');">
+                        <form action="delbankaccs.php" method="post" onsubmit="return confirm('<?php echo I18n::get('confirm_delete_selected_accounts'); ?>');">
                             <table class="info-table" style="width: 100%;">
                                 <thead>
                                     <tr class="infotable-header">
                                         <th><input type="checkbox" id="selectAll"></th>
-                                        <th><?php echo __('bank_name'); ?></th>
-                                        <th><?php echo __('account_number'); ?></th>
-                                        <th><?php echo __('balance'); ?></th>
-                                        <th><?php echo __('actions'); ?></th>
+                                        <th><?php echo I18n::get('bank_name'); ?></th>
+                                        <th><?php echo I18n::get('account_number'); ?></th>
+                                        <th><?php echo I18n::get('balance'); ?></th>
+                                        <th><?php echo I18n::get('actions'); ?></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -161,16 +163,16 @@ $currentLocale = I18n::getLocale();
                                         <td><?php echo htmlspecialchars($row['account_amount'], ENT_QUOTES, 'UTF-8'); ?></td>
                                         <td>
                                             <?php if ($can_edit_accounts): ?>
-                                                <a href="BankAccs.php?edit=<?php echo $row['id']; ?>"><?php echo __('edit'); ?></a> |
+                                                <a href="BankAccs.php?edit=<?php echo $row['id']; ?>"><?php echo I18n::get('edit'); ?></a> |
                                             <?php endif; ?>
-                                            <a href="BankAccs.php?attachments=<?php echo $row['id']; ?>"><?php echo __('attachments'); ?></a>
+                                            <a href="BankAccs.php?attachments=<?php echo $row['id']; ?>"><?php echo I18n::get('attachments'); ?></a>
                                         </td>
                                     </tr>
                                     <?php endwhile; ?>
                                 </tbody>
                             </table>
                             <?php if ($can_delete_accounts): ?>
-                                <input type="submit" value="<?php echo __('delete_selected'); ?>" class="delete-selected">
+                                <input type="submit" value="<?php echo I18n::get('delete_selected'); ?>" class="delete-selected">
                             <?php endif; ?>
                         </form>
                     </div>

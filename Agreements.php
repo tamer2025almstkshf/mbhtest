@@ -9,6 +9,7 @@
 // =============================================================================
 require_once __DIR__ . '/bootstrap.php';
 include_once 'permissions_check.php'; // Still need this for now
+use App\I18n;
 
 // 2. PERMISSIONS CHECK
 // =============================================================================
@@ -18,7 +19,7 @@ $can_edit_agreements = ($row_permcheck['agr_eperm'] === '1');
 $can_delete_agreements = ($row_permcheck['agr_dperm'] === '1');
 
 if (!$can_view_agreements) {
-    die(__('no_permission_to_view'));
+    die(I18n::get('no_permission_to_view'));
 }
 
 // 3. DETERMINE MODE (ADD/EDIT) & FETCH DATA
@@ -43,13 +44,13 @@ if ($can_edit_agreements && $edit_id) {
 
 // 4. RENDER PAGE
 // =============================================================================
-use App\I18n;
+
 $currentLocale = I18n::getLocale();
 ?>
 <!DOCTYPE html>
 <html dir="<?php echo ($currentLocale === 'ar') ? 'rtl' : 'ltr'; ?>" lang="<?php echo $currentLocale; ?>">
 <head>
-    <title><?php echo __('agreements'); ?></title>
+    <title><?php echo I18n::get('agreements'); ?></title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <link href="css/styles.css" rel="stylesheet">
 </head>
@@ -61,9 +62,9 @@ $currentLocale = I18n::getLocale();
             <div class="web-page">
                 <div class="table-container">
                     <div class="table-header">
-                        <h3><?php echo __('agreements'); ?></h3>
+                        <h3><?php echo I18n::get('agreements'); ?></h3>
                         <?php if ($can_add_agreements): ?>
-                            <button onclick="location.href='Agreements.php?add=1'"><?php echo __('add_new_agreement'); ?></button>
+                            <button onclick="location.href='Agreements.php?add=1'"><?php echo I18n::get('add_new_agreement'); ?></button>
                         <?php endif; ?>
                     </div>
 
@@ -72,7 +73,7 @@ $currentLocale = I18n::getLocale();
                     <div class="modal-overlay" style="display: block;">
                         <div class="modal-content">
                             <div class="addc-header">
-                                <h4><?php echo $edit_mode ? __('edit_agreement_data') : __('new_agreement'); ?></h4>
+                                <h4><?php echo $edit_mode ? I18n::get('edit_agreement_data') : I18n::get('new_agreement'); ?></h4>
                                 <a href="Agreements.php" class="close-button">&times;</a>
                             </div>
                             <form action="<?php echo $edit_mode ? 'agredit.php' : 'agradd.php'; ?>" method="post">
@@ -80,17 +81,17 @@ $currentLocale = I18n::getLocale();
                                     <input type="hidden" name="id" value="<?php echo htmlspecialchars($edit_data['id'], ENT_QUOTES, 'UTF-8'); ?>">
                                 <?php endif; ?>
                                 <div class="addc-body">
-                                    <p><?php echo __('client_name'); ?><font color="red">*</font></p>
+                                    <p><?php echo I18n::get('client_name'); ?><font color="red">*</font></p>
                                     <input class="form-input" name="client_name" value="<?php echo htmlspecialchars($edit_data['client_name'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" type="text" required>
                                     
-                                    <p><?php echo __('phone'); ?></p>
+                                    <p><?php echo I18n::get('phone'); ?></p>
                                     <input class="form-input" name="telno" value="<?php echo htmlspecialchars($edit_data['telno'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" type="text">
                                     
                                     <!-- Add other fields here, using htmlspecialchars -->
                                 </div>
                                 <div class="addc-footer">
-                                    <button type="submit" class="form-btn submit-btn"><?php echo __('save'); ?></button>
-                                    <a href="Agreements.php" class="form-btn cancel-btn"><?php echo __('cancel'); ?></a>
+                                    <button type="submit" class="form-btn submit-btn"><?php echo I18n::get('save'); ?></button>
+                                    <a href="Agreements.php" class="form-btn cancel-btn"><?php echo I18n::get('cancel'); ?></a>
                                 </div>
                             </form>
                         </div>
@@ -102,12 +103,12 @@ $currentLocale = I18n::getLocale();
                         <table class="info-table" style="width: 100%;">
                             <thead>
                                 <tr class="infotable-header">
-                                    <th><?php echo __('client_name'); ?></th>
-                                    <th><?php echo __('phone'); ?></th>
-                                    <th><?php echo __('attendees'); ?></th>
-                                    <th><?php echo __('signing_date'); ?></th>
-                                    <th><?php echo __('entered_by'); ?></th>
-                                    <th><?php echo __('actions'); ?></th>
+                                    <th><?php echo I18n::get('client_name'); ?></th>
+                                    <th><?php echo I18n::get('phone'); ?></th>
+                                    <th><?php echo I18n::get('attendees'); ?></th>
+                                    <th><?php echo I18n::get('signing_date'); ?></th>
+                                    <th><?php echo I18n::get('entered_by'); ?></th>
+                                    <th><?php echo I18n::get('actions'); ?></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -138,10 +139,10 @@ $currentLocale = I18n::getLocale();
                                     <td><?php echo htmlspecialchars($row['creator_name'], ENT_QUOTES, 'UTF-8'); ?></td>
                                     <td>
                                         <?php if ($can_edit_agreements): ?>
-                                            <a href="Agreements.php?id=<?php echo $row['id']; ?>"><?php echo __('edit'); ?></a>
+                                            <a href="Agreements.php?id=<?php echo $row['id']; ?>"><?php echo I18n::get('edit'); ?></a>
                                         <?php endif; ?>
                                         <?php if ($can_delete_agreements): ?>
-                                            <a href="deleteagreement.php?id=<?php echo $row['id']; ?>" onclick="return confirm('<?php echo __('delete_agreement_confirmation'); ?>');"><?php echo __('delete'); ?></a>
+                                            <a href="deleteagreement.php?id=<?php echo $row['id']; ?>" onclick="return confirm('<?php echo I18n::get('delete_agreement_confirmation'); ?>');"><?php echo I18n::get('delete'); ?></a>
                                         <?php endif; ?>
                                     </td>
                                 </tr>

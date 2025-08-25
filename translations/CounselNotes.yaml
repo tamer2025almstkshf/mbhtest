@@ -1,0 +1,15 @@
+ar:
+  notes_on_file: "ملاحظات على الملف"
+  notes_for_file_number: "ملاحظات للملف رقم:"
+  by: "بواسطة:"
+  invalid_note_id: "تم تقديم معرف ملاحظة غير صالح."
+  note_not_found: "لم يتم العثور على الملاحظة."
+  associated_file_not_found: "لم يتم العثور على ملف مرتبط لهذه الملاحظة."
+
+en:
+  notes_on_file: "Notes on File"
+  notes_for_file_number: "Notes for File Number:"
+  by: "By:"
+  invalid_note_id: "Invalid Note ID provided."
+  note_not_found: "Note not found."
+  associated_file_not_found: "Associated file not found for this note."

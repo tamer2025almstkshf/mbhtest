@@ -1,6 +1,9 @@
 <?php
     include_once 'connection.php';
     include_once 'login_check.php';
+    include_once 'src/I18n.php';
+
+    $i18n = new I18n('translations/AdvancedSearch.yaml');
 
     // --- Securely fetch user permissions ---
     $user_id = $_SESSION['id'];
@@ -99,9 +102,9 @@
     }
 ?>
 <!DOCTYPE html>
-<html dir="rtl">
+<html dir="<?php echo $i18n->getDirection(); ?>">
 <head>
-    <title>البحث المتقدم</title>
+    <title><?php echo $i18n->get('advanced_search'); ?></title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <link href="css/styles.css" rel="stylesheet">
 </head>
@@ -113,42 +116,42 @@
         <div class="web-page">
             <div class="advinputs-container">
                 <form name="SearchForm" action="AdvancedSearch.php" method="get">
-                    <h2 class="advinputs-h2">البحث المتقدم</h2>
+                    <h2 class="advinputs-h2"><?php echo $i18n->get('advanced_search'); ?></h2>
                     
                     <!-- Search Form Inputs -->
                     <div class="advinputs">
                         <div class="input-container">
-                            <p>نوع الملف</p>
+                            <p><?php echo $i18n->get('file_type'); ?></p>
                             <select name="type">
                                 <option value=""></option>
-                                <option value="مدني -عمالى" <?php if(e_val('type') == 'مدني -عمالى') echo 'selected'; ?>>مدني -عمالى</option>
+                                <option value="مدني -عمالى" <?php if(e_val('type') == 'مدني -عمالى') echo 'selected'; ?>><?php echo $i18n->get('civil_labor'); ?></option>
                                 <!-- Other options here -->
                             </select>
                         </div>
                         <div class="input-container">
-                            <p>رقم الملف</p>
+                            <p><?php echo $i18n->get('file_number'); ?></p>
                             <input type="number" name="fid" value="<?php echo e_val('fid'); ?>">
                         </div>
                          <!-- Add all other search fields here, using e_val(), e_check() -->
                     </div>
 
-                    <button type="submit" class="green-button">البحث في الملفات</button>
+                    <button type="submit" class="green-button"><?php echo $i18n->get('search_in_files'); ?></button>
                 </form>
 
                 <?php if ($query_executed): ?>
                 <div class="table-container">
-                    <h3>نتائج البحث (<?php echo count($results); ?>)</h3>
+                    <h3><?php echo $i18n->get('search_results'); ?> (<?php echo count($results); ?>)</h3>
                     <table class="info-table">
                         <thead>
                             <tr>
-                                <th>رقم الملف</th>
-                                <th>الموضوع</th>
+                                <th><?php echo $i18n->get('file_number'); ?></th>
+                                <th><?php echo $i18n->get('subject'); ?></th>
                                 <!-- Other headers -->
                             </tr>
                         </thead>
                         <tbody>
                             <?php if (empty($results)): ?>
-                                <tr><td colspan="2">لا توجد نتائج تطابق بحثك.</td></tr>
+                                <tr><td colspan="2"><?php echo $i18n->get('no_results'); ?></td></tr>
                             <?php else: ?>
                                 <?php foreach ($results as $row): ?>
                                 <tr class="infotable-body">

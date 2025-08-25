@@ -16,13 +16,16 @@ include_once 'login_check.php';
 include_once 'safe_output.php';
 include_once 'permissions_check.php';
 include_once 'golden_pass.php';
+include_once 'src/I18n.php';
+
+$i18n = new I18n('translations/CasePreview.yaml');
 
 // 2. PERMISSIONS CHECK
 // =============================================================================
 if ($row_permcheck['cfiles_rperm'] != 1) {
     // It's better to show a proper "Access Denied" page than a blank one.
     http_response_code(403);
-    die('You do not have permission to view this page.');
+    die($i18n->get('no_permission_to_view'));
 }
 
 // 3. INPUT VALIDATION & INITIALIZATION
@@ -31,7 +34,7 @@ $fileId = filter_input(INPUT_GET, 'fid', FILTER_VALIDATE_INT);
 
 if (!$fileId || $fileId <= 0) {
     http_response_code(400);
-    die('Invalid or missing File ID.');
+    die($i18n->get('invalid_file_id'));
 }
 
 // 4. DATA FETCHING
@@ -47,7 +50,7 @@ $stmt->close();
 
 if (!$file) {
     http_response_code(404);
-    die('File not found.');
+    die($i18n->get('file_not_found'));
 }
 
 // Security Check: Secret Folder Access
@@ -55,7 +58,7 @@ if ($admin != 1 && $file['secret_folder'] == 1) {
     $allowedUserIds = array_filter(array_map('trim', explode(',', $file['secret_emps'])));
     if (!in_array($_SESSION['id'], $allowedUserIds, true)) {
         http_response_code(403);
-        die('Access to this file is restricted.');
+        die($i18n->get('access_restricted'));
     }
 }
 
@@ -176,11 +179,11 @@ function getFilePrefix($place) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="<?php echo $i18n->getLocale(); ?>" dir="<?php echo $i18n->getDirection(); ?>">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>تفاصيل الملف - <?php echo safe_output($file['file_id']); ?></title>
+    <title><?php echo $i18n->get('file_details'); ?> - <?php echo safe_output($file['file_id']); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link href="css/sites.css" rel="stylesheet">
@@ -191,7 +194,7 @@ function getFilePrefix($place) {
 
     <div class="print-btn-container">
         <button id="printBtn" class="print-btn" onclick="window.print();">
-            <i class='bx bx-printer'></i> طباعة
+            <i class='bx bx-printer'></i> <?php echo $i18n->get('print'); ?>
         </button>
     </div>
 
@@ -199,7 +202,7 @@ function getFilePrefix($place) {
         <main class="main-content">
             <header id="case-header" class="case-header">
                 <h1>
-                    تفاصيل الملف رقم
+                    <?php echo $i18n->get('file_details'); ?>
                     <span class="case-number">
                         <?php echo safe_output(getFilePrefix($file['frelated_place']) . " " . $file['file_id']); ?>
                     </span>
@@ -208,16 +211,16 @@ function getFilePrefix($place) {
 
             <!-- Case Info Section -->
             <section class="info-section">
-                <h2><i class='bx bxs-folder-open'></i> معلومات الملف</h2>
+                <h2><i class='bx bxs-folder-open'></i> <?php echo $i18n->get('file_info'); ?></h2>
                 <div class="info-grid">
-                    <div class="info-box"><h4>نوع الملف</h4><p><?php echo safe_output($file['file_type']); ?></p></div>
-                    <div class="info-box"><h4>تصنيف الملف</h4><p><?php echo safe_output($file['file_class']); ?></p></div>
-                    <div class="info-box"><h4>مركز الشرطة</h4><p><?php echo safe_output($file['fpolice_station']); ?></p></div>
-                    <div class="info-box"><h4>المحكمة</h4><p><?php echo safe_output($file['file_court']); ?></p></div>
-                    <div class="info-box wide"><h4>الموضوع</h4><p><?php echo safe_output($file['file_subject']); ?></p></div>
-                    <div class="info-box wide"><h4>ملاحظات</h4><p><?php echo nl2br(safe_output($file['file_notes'])); ?></p></div>
-                    <div class="info-box"><h4>المستشار القانوني</h4><p><?php echo safe_output($legalAdvisorName); ?></p></div>
-                    <div class="info-box"><h4>الباحث القانوني</h4><p><?php echo safe_output($legalResearcherName); ?></p></div>
+                    <div class="info-box"><h4><?php echo $i18n->get('file_type'); ?></h4><p><?php echo safe_output($file['file_type']); ?></p></div>
+                    <div class="info-box"><h4><?php echo $i18n->get('file_classification'); ?></h4><p><?php echo safe_output($file['file_class']); ?></p></div>
+                    <div class="info-box"><h4><?php echo $i18n->get('police_station'); ?></h4><p><?php echo safe_output($file['fpolice_station']); ?></p></div>
+                    <div class="info-box"><h4><?php echo $i18n->get('court'); ?></h4><p><?php echo safe_output($file['file_court']); ?></p></div>
+                    <div class="info-box wide"><h4><?php echo $i18n->get('subject'); ?></h4><p><?php echo safe_output($file['file_subject']); ?></p></div>
+                    <div class="info-box wide"><h4><?php echo $i18n->get('notes'); ?></h4><p><?php echo nl2br(safe_output($file['file_notes'])); ?></p></div>
+                    <div class="info-box"><h4><?php echo $i18n->get('legal_advisor'); ?></h4><p><?php echo safe_output($legalAdvisorName); ?></p></div>
+                    <div class="info-box"><h4><?php echo $i18n->get('legal_researcher'); ?></h4><p><?php echo safe_output($legalResearcherName); ?></p></div>
                 </div>
             </section>
             
@@ -226,12 +229,12 @@ function getFilePrefix($place) {
                 <!-- Clients Section -->
                 <div class="accordion-item">
                     <button class="accordion-header">
-                        <span><i class='bx bxs-user'></i> الموكلين</span>
+                        <span><i class='bx bxs-user'></i> <?php echo $i18n->get('clients'); ?></span>
                         <i class='bx bx-chevron-down'></i>
                     </button>
                     <div class="accordion-content">
                         <?php if (empty($clients)): ?>
-                            <p>لا يوجد موكلين مسجلين.</p>
+                            <p><?php echo $i18n->get('no_clients_registered'); ?></p>
                         <?php else: ?>
                             <ul>
                                 <?php foreach ($clients as $client): ?>
@@ -245,22 +248,22 @@ function getFilePrefix($place) {
                 <!-- Degrees Section -->
                 <div class="accordion-item">
                     <button class="accordion-header">
-                        <span><i class='bx bxs-layer'></i> درجات التقاضي (<?php echo count($degrees); ?>)</span>
+                        <span><i class='bx bxs-layer'></i> <?php echo $i18n->get('litigation_degrees'); ?> (<?php echo count($degrees); ?>)</span>
                         <i class='bx bx-chevron-down'></i>
                     </button>
                     <div class="accordion-content">
                         <?php if (empty($degrees)): ?>
-                            <p>لا توجد درجات تقاضي مسجلة.</p>
+                            <p><?php echo $i18n->get('no_litigation_degrees_registered'); ?></p>
                         <?php else: ?>
                         <div class="table-responsive">
                             <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th>الدرجة</th>
-                                        <th>رقم القضية</th>
-                                        <th>صفة الموكل</th>
-                                        <th>صفة الخصم</th>
-                                        <th>تاريخ الإدخال</th>
+                                        <th><?php echo $i18n->get('degree'); ?></th>
+                                        <th><?php echo $i18n->get('case_number'); ?></th>
+                                        <th><?php echo $i18n->get('client_characteristic'); ?></th>
+                                        <th><?php echo $i18n->get('opponent_characteristic'); ?></th>
+                                        <th><?php echo $i18n->get('entry_date'); ?></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -283,21 +286,21 @@ function getFilePrefix($place) {
                 <!-- Sessions Section -->
                 <div class="accordion-item">
                     <button class="accordion-header">
-                        <span><i class='bx bxs-calendar-event'></i> الجلسات (<?php echo count($sessions); ?>)</span>
+                        <span><i class='bx bxs-calendar-event'></i> <?php echo $i18n->get('sessions'); ?> (<?php echo count($sessions); ?>)</span>
                         <i class='bx bx-chevron-down'></i>
                     </button>
                     <div class="accordion-content">
                         <?php if (empty($sessions)): ?>
-                            <p>لا توجد جلسات مسجلة.</p>
+                            <p><?php echo $i18n->get('no_sessions_registered'); ?></p>
                         <?php else: ?>
                         <div class="table-responsive">
                             <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th>تاريخ الجلسة</th>
-                                        <th>درجة التقاضي</th>
-                                        <th>التفاصيل</th>
-                                        <th>منطوق الحكم</th>
+                                        <th><?php echo $i18n->get('session_date'); ?></th>
+                                        <th><?php echo $i18n->get('litigation_degrees'); ?></th>
+                                        <th><?php echo $i18n->get('details'); ?></th>
+                                        <th><?php echo $i18n->get('judgment_text'); ?></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -319,22 +322,22 @@ function getFilePrefix($place) {
                 <!-- Tasks Section -->
                 <div class="accordion-item">
                     <button class="accordion-header">
-                        <span><i class='bx bx-task'></i> المهام الإدارية (<?php echo count($tasks); ?>)</span>
+                        <span><i class='bx bx-task'></i> <?php echo $i18n->get('administrative_tasks'); ?> (<?php echo count($tasks); ?>)</span>
                         <i class='bx bx-chevron-down'></i>
                     </button>
                     <div class="accordion-content">
                         <?php if (empty($tasks)): ?>
-                            <p>لا توجد مهام إدارية مسجلة.</p>
+                            <p><?php echo $i18n->get('no_administrative_tasks_registered'); ?></p>
                         <?php else: ?>
                         <div class="table-responsive">
                              <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th>ت.التنفيذ</th>
-                                        <th>المهمة</th>
-                                        <th>الباحث القانوني</th>
-                                        <th>التفاصيل</th>
-                                        <th>الأهمية</th>
+                                        <th><?php echo $i18n->get('due_date'); ?></th>
+                                        <th><?php echo $i18n->get('task'); ?></th>
+                                        <th><?php echo $i18n->get('legal_researcher'); ?></th>
+                                        <th><?php echo $i18n->get('details'); ?></th>
+                                        <th><?php echo $i18n->get('importance'); ?></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -344,7 +347,7 @@ function getFilePrefix($place) {
                                         <td><?php echo safe_output($task['job_name']); ?></td>
                                         <td><?php echo safe_output($task['employee_name']); ?></td>
                                         <td><?php echo safe_output($task['details']); ?></td>
-                                        <td><?php echo $task['priority'] == 1 ? '<span class="priority-urgent">عاجل</span>' : 'عادي'; ?></td>
+                                        <td><?php echo $task['priority'] == 1 ? '<span class="priority-urgent">' . $i18n->get('urgent') . '</span>' : $i18n->get('normal'); ?></td>
                                     </tr>
                                 <?php endforeach; ?>
                                 </tbody>
@@ -357,12 +360,12 @@ function getFilePrefix($place) {
                 <!-- Attachments Section -->
                 <div class="accordion-item">
                     <button class="accordion-header">
-                        <span><i class='bx bxs-paperclip'></i> المرفقات (<?php echo count($attachments) + count($documents); ?>)</span>
+                        <span><i class='bx bxs-paperclip'></i> <?php echo $i18n->get('attachments'); ?> (<?php echo count($attachments) + count($documents); ?>)</span>
                         <i class='bx bx-chevron-down'></i>
                     </button>
                     <div class="accordion-content">
                         <?php if (empty($attachments) && empty($documents)): ?>
-                            <p>لا توجد مرفقات.</p>
+                            <p><?php echo $i18n->get('no_attachments'); ?></p>
                         <?php else: ?>
                         <ul class="attachment-list">
                             <?php foreach ($attachments as $att): ?>
@@ -373,8 +376,8 @@ function getFilePrefix($place) {
                                 </a>
                                 <span class="meta">
                                     (<?php echo safe_output($att['attachment_size']); ?>) - 
-                                    رفع بواسطة: <?php echo safe_output($att['uploader_name']); ?>
-                                    بتاريخ: <?php echo safe_output($att['timestamp']); ?>
+                                    <?php echo $i18n->get('uploaded_by'); ?>: <?php echo safe_output($att['uploader_name']); ?>
+                                    <?php echo $i18n->get('date'); ?>: <?php echo safe_output($att['timestamp']); ?>
                                 </span>
                             </li>
                             <?php endforeach; ?>
@@ -382,10 +385,10 @@ function getFilePrefix($place) {
                             <li>
                                 <i class='bx bxs-file-doc'></i>
                                 <a href="AddNotes.php?fno=<?php echo safe_output($doc['dfile_no']); ?>&id=<?php echo safe_output($doc['did']); ?>&edit=1" target="_blank">
-                                    <?php echo safe_output($doc['document_subject']); ?> (مذكرة)
+                                    <?php echo safe_output($doc['document_subject']); ?> (<?php echo $i18n->get('memo'); ?>)
                                 </a>
                                 <span class="meta">
-                                    بتاريخ: <?php echo safe_output($doc['document_date']); ?>
+                                    <?php echo $i18n->get('date'); ?>: <?php echo safe_output($doc['document_date']); ?>
                                 </span>
                             </li>
                             <?php endforeach; ?>

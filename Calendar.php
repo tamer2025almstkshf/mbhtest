@@ -15,6 +15,9 @@
 include_once 'connection.php';
 include_once 'login_check.php';
 include_once 'safe_output.php';
+include_once 'src/I18n.php';
+
+$i18n = new I18n('translations/Calendar.yaml');
 
 // 2. INITIALIZATION & DATE LOGIC
 // =============================================================================
@@ -33,15 +36,9 @@ $firstDayTimestamp = mktime(0, 0, 0, $currentMonth, 1, $currentYear);
 $daysInMonth = date('t', $firstDayTimestamp);
 $startDayOfWeek = date('w', $firstDayTimestamp); // 0 (Sun) to 6 (Sat)
 
-$arabicMonths = [
-    'January' => 'يناير', 'February' => 'فبراير', 'March' => 'مارس',
-    'April' => 'أبريل', 'May' => 'مايو', 'June' => 'يونيو',
-    'July' => 'يوليو', 'August' => 'أغسطس', 'September' => 'سبتمبر',
-    'October' => 'أكتوبر', 'November' => 'نوفمبر', 'December' => 'ديسمبر',
-];
-$monthNameEn = date('F', $firstDayTimestamp);
-$monthNameAr = $arabicMonths[$monthNameEn];
-$dayNamesAr = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+$monthNameKey = strtolower(date('F', $firstDayTimestamp));
+$monthName = $i18n->get($monthNameKey);
+$dayNames = [$i18n->get('sunday'), $i18n->get('monday'), $i18n->get('tuesday'), $i18n->get('wednesday'), $i18n->get('thursday'), $i18n->get('friday'), $i18n->get('saturday')];
 
 // 3. FETCH EVENTS FROM DATABASE
 // =============================================================================
@@ -74,7 +71,7 @@ while ($row = $result->fetch_assoc()) {
         $eventDetails[] = '<span class="event-time">@ ' . date("g:i A", strtotime($row['time'])) . '</span>';
     }
     if (!empty($row['employee_name'])) {
-         $eventDetails[] = '<span class="event-creator">بواسطة: ' . htmlspecialchars($row['employee_name']) . '</span>';
+         $eventDetails[] = '<span class="event-creator">' . $i18n->get('by') . ': ' . htmlspecialchars($row['employee_name']) . '</span>';
     }
     // Group events by date
     $events[$row['event_date']][] = implode('<br>', $eventDetails);
@@ -82,12 +79,12 @@ while ($row = $result->fetch_assoc()) {
 $stmt->close();
 ?>
 <!DOCTYPE html>
-<html dir="rtl" lang="ar">
+<html dir="<?php echo $i18n->getDirection(); ?>" lang="<?php echo $i18n->getLocale(); ?>">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تقويم الموارد البشرية - <?php echo "$monthNameAr $currentYear"; ?></title>
+    <title><?php echo $i18n->get('hr_calendar'); ?> - <?php echo "$monthName $currentYear"; ?></title>
     
     <!-- Dependencies -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -107,13 +104,13 @@ $stmt->close();
             <main class="web-page">
                 <div class="calendar-container">
                     <header class="calendar-header">
-                        <button onclick="navigateMonth(1)" title="الشهر التالي">◀</button>
-                        <h2><?php echo "$monthNameAr $currentYear"; ?></h2>
-                        <button onclick="navigateMonth(-1)" title="الشهر السابق">▶</button>
+                        <button onclick="navigateMonth(1)" title="<?php echo $i18n->get('next_month'); ?>">◀</button>
+                        <h2><?php echo "$monthName $currentYear"; ?></h2>
+                        <button onclick="navigateMonth(-1)" title="<?php echo $i18n->get('previous_month'); ?>">▶</button>
                     </header>
                     
                     <div class="calendar-grid">
-                        <?php foreach ($dayNamesAr as $dayName) : ?>
+                        <?php foreach ($dayNames as $dayName) : ?>
                             <div class="day-header"><?php echo $dayName; ?></div>
                         <?php endforeach; ?>
                         
@@ -124,7 +121,7 @@ $stmt->close();
                         <?php for ($day = 1; $day <= $daysInMonth; $day++) : 
                             $dateKey = sprintf('%04d-%02d-%02d', $currentYear, $currentMonth, $day);
                         ?>
-                            <div class="day-box" onclick='openModal("<?php echo $dateKey; ?>")' title="إضافة حدث لـ <?php echo $day; ?>/<?php echo $currentMonth; ?>">
+                            <div class="day-box" onclick='openModal("<?php echo $dateKey; ?>")' title="<?php echo $i18n->get('add_event_for'); ?> <?php echo $day; ?>/<?php echo $currentMonth; ?>">
                                 <div class="day-number"><?php echo $day; ?></div>
                                 <?php if (isset($events[$dateKey])) : ?>
                                     <div class="event-container">
@@ -142,23 +139,23 @@ $stmt->close();
                 <div id="eventModal" class="modal2" style="display:none;">
                     <div class="modal-content2">
                         <header class="modal-header" style="display: flex; justify-content: space-between; align-items: center; background-color: #125483; color: #fff; padding: 10px; border-radius: 3px 3px 0 0;">
-                            <h3>إضافة مراجعة خارجية</h3>
-                            <span class="close2" onclick="closeModal()" title="إغلاق">&times;</span>
+                            <h3><?php echo $i18n->get('add_external_review'); ?></h3>
+                            <span class="close2" onclick="closeModal()" title="<?php echo $i18n->get('close'); ?>">&times;</span>
                         </header>
                         <form id="eventForm" action="save_hrevent.php" method="POST" style="padding: 15px;">
                             <input type="hidden" name="event_date" id="event_date">
                             
-                            <label for="title">التفاصيل:</label>
+                            <label for="title"><?php echo $i18n->get('details'); ?>:</label>
                             <textarea id="title" class="form-input2" name="title" required></textarea>
                             
-                            <label for="timeHH">الوقت:</label>
+                            <label for="timeHH"><?php echo $i18n->get('time'); ?>:</label>
                             <div style="display: flex; align-items: center; gap: 5px;">
                                 <input type="number" id="timeHH" class="form-input2" min="0" max="23" name="timeHH" style="width: 60px" placeholder="HH" required>
                                 <span>:</span>
                                 <input type="number" class="form-input2" min="0" max="59" name="timeMM" style="width: 60px" placeholder="MM" required>
                             </div>
 
-                            <button type="submit" class="blue-button" style="margin-top: 15px;">حفظ</button>
+                            <button type="submit" class="blue-button" style="margin-top: 15px;"><?php echo $i18n->get('save'); ?></button>
                         </form>
                     </div>
                 </div>
