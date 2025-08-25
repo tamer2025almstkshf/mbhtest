@@ -1,27 +1,8 @@
-# PHP Composer dependencies
+# Composer dependencies
 /vendor/
 
-# Environment variables
+# Environment files
 .env
 .env.*
 !.env.example
 
-# Cache, log, and upload directories
-/cache/
-/log/
-/logs/
-/upload/
-/uploads/
-
-# PHP error logs
-error_log
-*.log
-
-# IDE-specific files
-.vscode/
-.idea/
-*.iml
-
-# OS generated files
-.DS_Store
-Thumbs.db
