@@ -9,3 +9,14 @@ To test the service locally, run:
 ```sh
 php -S localhost:3000 index.php
 ```
+
+## Testing
+
+Install Composer dependencies and run the PHPUnit test suite:
+
+```sh
+composer install
+./vendor/bin/phpunit
+```
+
+The tests use mocked database connections to avoid touching production data.
