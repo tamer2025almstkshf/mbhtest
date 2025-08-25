@@ -21,13 +21,17 @@
     <body>
         <?php
             $id = $_SESSION['id'];
-            $querymain = "SELECT * FROM user WHERE id='$id'";
-            $resultmain = mysqli_query($conn, $querymain);
+            $stmt = $conn->prepare("SELECT * FROM user WHERE id=?");
+            $stmt->bind_param("i", $id);
+            $stmt->execute();
+            $resultmain = $stmt->get_result();
             $rowmain = mysqli_fetch_array($resultmain);
-            
+
             $myid = $_SESSION['id'];
-            $query_permcheck = "SELECT * FROM user WHERE id='$myid'";
-            $result_permcheck = mysqli_query($conn, $query_permcheck);
+            $stmt = $conn->prepare("SELECT * FROM user WHERE id=?");
+            $stmt->bind_param("i", $myid);
+            $stmt->execute();
+            $result_permcheck = $stmt->get_result();
             $row_permcheck = mysqli_fetch_array($result_permcheck);
             
             include_once 'AES256.php';
@@ -114,7 +118,7 @@
                                 
                                 <?php
                                     $query = "SELECT * FROM user ORDER BY id DESC";
-                                    $result = mysqli_query($conn, $query);
+                                    $result = $conn->query($query);
                                     if($result->num_rows > 0){
                                         while($row = mysqli_fetch_array($result)){
                                 ?>

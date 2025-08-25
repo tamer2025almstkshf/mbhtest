@@ -66,14 +66,18 @@
                 include_once 'sidebar.php';
                 
                 $myid = $_SESSION['id'];
-                $query_permcheck = "SELECT * FROM user WHERE id='$myid'";
-                $result_permcheck = mysqli_query($conn, $query_permcheck);
+                $stmt = $conn->prepare("SELECT * FROM user WHERE id=?");
+                $stmt->bind_param("i", $myid);
+                $stmt->execute();
+                $result_permcheck = $stmt->get_result();
                 $row_permcheck = mysqli_fetch_array($result_permcheck);
-                
+
                 if(isset($_GET['id']) && $_GET['id'] !== ''){
-                    $csidd = $_GET['id'];
-                    $queryre = "SELECT * FROM clients_schedule WHERE id='$csidd'";
-                    $resultre = mysqli_query($conn, $queryre);
+                    $csidd = (int)$_GET['id'];
+                    $stmt = $conn->prepare("SELECT * FROM clients_schedule WHERE id=?");
+                    $stmt->bind_param("i", $csidd);
+                    $stmt->execute();
+                    $resultre = $stmt->get_result();
                     $rowre = mysqli_fetch_array($resultre);
                 }
                 
@@ -181,7 +185,7 @@
                                                                             <select name="meet_with" dir="rtl">
                                                                                 <?php
                                                                                     $queryusers = "SELECT * FROM user";
-                                                                                    $resultusers = mysqli_query($conn, $queryusers);
+                                                                                    $resultusers = $conn->query($queryusers);
                                                                                     $selecteduserid = $rowre['meet_with'];
                                                                                     while($rowusers = mysqli_fetch_array($resultusers)){
                                                                                 ?>
@@ -253,7 +257,7 @@
                                                     <tbody id="table1">
                                                         <?php
                                                             $query = "SELECT * FROM clients_schedule";
-                                                            $result = mysqli_query($conn, $query);
+                                                            $result = $conn->query($query);
                                                             
                                                             if($result->num_rows > 0){
                                                                 while($row=mysqli_fetch_array($result)){
@@ -277,8 +281,10 @@
                                                                 <?php 
                                                                     if(isset($row['meet_with'])){
                                                                         $meet_id = $row['meet_with'];
-                                                                        $queryr = "SELECT * FROM user WHERE id='$meet_id'";
-                                                                        $resultr = mysqli_query($conn, $queryr);
+                                                                        $stmt = $conn->prepare("SELECT * FROM user WHERE id=?");
+                                                                        $stmt->bind_param("i", $meet_id);
+                                                                        $stmt->execute();
+                                                                        $resultr = $stmt->get_result();
                                                                         $rowr = mysqli_fetch_array($resultr);
                                                                         echo $rowr['name'];
                                                                     }
@@ -292,10 +298,12 @@
                                                                     if(isset($row['timestamp'])){
                                                                         $timestamp = $row['timestamp']; 
                                                                         list($empid, $date) = explode(" <br> ", $timestamp); 
-                                                                        $queryuser = "SELECT * FROM user WHERE id='$empid'"; 
-                                                                        $resultuser = mysqli_query($conn, $queryuser); 
-                                                                        $rowuser = mysqli_fetch_array($resultuser); 
-                                                                        $emp_name = $rowuser['name']; 
+                                                                        $stmt = $conn->prepare("SELECT * FROM user WHERE id=?");
+                                                                        $stmt->bind_param("i", $empid);
+                                                                        $stmt->execute();
+                                                                        $resultuser = $stmt->get_result();
+                                                                        $rowuser = mysqli_fetch_array($resultuser);
+                                                                        $emp_name = $rowuser['name'];
                                                                         echo $emp_name."<br>".$date;
                                                                     }
                                                                 ?>
