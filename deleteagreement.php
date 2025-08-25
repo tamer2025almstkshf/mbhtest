@@ -2,129 +2,114 @@
     include_once 'connection.php';
     include_once 'login_check.php';
     
-    $id = $_SESSION['id'];
-    $querymain = "SELECT * FROM user WHERE id='$id'";
-    $resultmain = mysqli_query($conn, $querymain);
-    $rowmain = mysqli_fetch_array($resultmain);
+    if (!isset($_SESSION['id'])) {
+        header("Location: login.php");
+        exit();
+    }
     
     $myid = $_SESSION['id'];
-    $query_permcheck = "SELECT * FROM user WHERE id='$myid'";
-    $result_permcheck = mysqli_query($conn, $query_permcheck);
-    $row_permcheck = mysqli_fetch_array($result_permcheck);
+    $stmt = $conn->prepare("SELECT * FROM user WHERE id = ?");
+    $stmt->bind_param("i", $myid);
+    $stmt->execute();
+    $result_permcheck = $stmt->get_result();
+    $row_permcheck = $result_permcheck->fetch_assoc();
+    $stmt->close();
     
-    $page = $_GET['page'];
+    if ($row_permcheck && $row_permcheck['clients_dperm'] === '1') {
+        if (isset($_GET['id']) && $_GET['id'] !== '') {
+            $agreement_id = $_GET['id'];
+            
+            // Prepare statement for fetching user names to avoid repetition
+            $user_stmt = $conn->prepare("SELECT name FROM user WHERE id = ?");
     
-    if($row_permcheck['clients_dperm'] === '1'){
-        if(isset($_GET['id']) && $_GET['id'] !== ''){
-            $id = $_GET['id'];
-            
-            $action = "تم حذف اتفاقية :<br>";
-            
-            $queryr = "SELECT * FROM consultations WHERE id='$id'";
-            $resultr = mysqli_query($conn, $queryr);
-            $row = mysqli_fetch_array($resultr);
-            
-            $client_name = $row['client_name'];
-            if(isset($client_name) && $client_name !== ''){
-                $flag = '1';
-                
-                $action = $action."<br>اسم الموكل : $client_name";
+            // Fetch agreement details before deleting to log them
+            $stmt = $conn->prepare("SELECT * FROM consultations WHERE id = ?");
+            $stmt->bind_param("i", $agreement_id);
+            $stmt->execute();
+            $resultr = $stmt->get_result();
+            $row = $resultr->fetch_assoc();
+            $stmt->close();
+    
+            if ($row) {
+                $action = "تم حذف اتفاقية :<br>";
+                $flag = '0';
+    
+                $client_name = $row['client_name'];
+                if (isset($client_name) && $client_name !== '') {
+                    $flag = '1';
+                    $action .= "<br>اسم الموكل : " . htmlspecialchars($client_name);
+                }
+    
+                $nationality = $row['nationality'];
+                if (isset($nationality) && $nationality !== '') {
+                    $flag = '1';
+                    $action .= "<br>الجنسية : " . htmlspecialchars($nationality);
+                }
+    
+                $telno = $row['telno'];
+                if (isset($telno) && $telno !== '') {
+                    $flag = '1';
+                    $action .= "<br>الهاتف : " . htmlspecialchars($telno);
+                }
+    
+                $email = $row['email'];
+                if (isset($email) && $email !== '') {
+                    $flag = '1';
+                    $action .= "<br>الايميل : " . htmlspecialchars($email);
+                }
+    
+                $others_ids = [$row['others1'], $row['others2'], $row['others3']];
+                foreach ($others_ids as $other_id) {
+                    if (isset($other_id) && $other_id !== '') {
+                        $flag = '1';
+                        $user_stmt->bind_param("i", $other_id);
+                        $user_stmt->execute();
+                        $resultc = $user_stmt->get_result();
+                        if ($rowc = $resultc->fetch_assoc()) {
+                            $oname = $rowc['name'];
+                            $action .= "<br>الحضور : " . htmlspecialchars($oname);
+                        }
+                    }
+                }
+    
+                $place = $row['place'];
+                if (isset($place) && $place !== '') {
+                    $flag = '1';
+                    $action .= "<br>الفرع : " . htmlspecialchars($place);
+                }
+    
+                $way = $row['way'];
+                if (isset($way) && $way !== '') {
+                    $flag = '1';
+                    $action .= "<br>كيف عرفت عن المكتب : " . htmlspecialchars($way);
+                }
+    
+                $sign_date = $row['sign_date'];
+                if (isset($sign_date) && $sign_date !== '') {
+                    $flag = '1';
+                    $action .= "<br>تاريخ توقيع الاتفاقية : " . htmlspecialchars($sign_date);
+                }
+    
+                if ($flag === '1') {
+                    $empid = $_SESSION['id'];
+                    $emp_name = $row_permcheck['name']; // We already have this from the first query
+    
+                    $log_stmt = $conn->prepare("INSERT INTO logs (empid, emp_name, action) VALUES (?, ?, ?)");
+                    $log_stmt->bind_param("iss", $empid, $emp_name, $action);
+                    $log_stmt->execute();
+                    $log_stmt->close();
+                }
+    
+                // Now, delete the agreement
+                $delete_stmt = $conn->prepare("DELETE FROM consultations WHERE id = ?");
+                $delete_stmt->bind_param("i", $agreement_id);
+                $delete_stmt->execute();
+                $delete_stmt->close();
             }
-            
-            $nationality = $row['nationality'];
-            if(isset($nationality) && $nationality !== ''){
-                $flag = '1';
-                
-                $action = $action."<br>الجنسية : $nationality";
-            }
-            
-            $telno = $row['telno'];
-            if(isset($telno) && $telno !== ''){
-                $flag = '1';
-                
-                $action = $action."<br>الهاتف : $telno";
-            }
-            
-            $email = $row['email'];
-            if(isset($email) && $email !== ''){
-                $flag = '1';
-                
-                $action = $action."<br>الايميل : $email";
-            }
-            
-            $others1 = $row['others1'];
-            if(isset($others1) && $others1 !== ''){
-                $flag = '1';
-                
-                $queryc = "SELECT * FROM user WHERE id='$others1'";
-                $resultc = mysqli_query($conn, $queryc);
-                $rowc = mysqli_fetch_array($resultc);
-                $oname = $rowc['name'];
-                
-                $action = $action."<br>الحضور : $oname";
-            }
-            
-            $others2 = $row['others2'];
-            if(isset($others2) && $others2 !== ''){
-                $flag = '1';
-                
-                $queryc = "SELECT * FROM user WHERE id='$others2'";
-                $resultc = mysqli_query($conn, $queryc);
-                $rowc = mysqli_fetch_array($resultc);
-                $oname = $rowc['name'];
-                
-                $action = $action."<br>الحضور : $oname";
-            }
-            
-            $others3 = $row['others3'];
-            if(isset($others3) && $others3 !== ''){
-                $flag = '1';
-                
-                $queryc = "SELECT * FROM user WHERE id='$others3'";
-                $resultc = mysqli_query($conn, $queryc);
-                $rowc = mysqli_fetch_array($resultc);
-                $oname = $rowc['name'];
-                
-                $action = $action."<br>الحضور : $oname";
-            }
-            
-            $place = $row['place'];
-            if(isset($place) && $place !== ''){
-                $flag = '1';
-                
-                $action = $action."<br>الفرع : $place";
-            }
-            
-            $way = $row['way'];
-            if(isset($way) && $way !== ''){
-                $flag = '1';
-                
-                $action = $action."<br>كيف عرفت عن المكتب : $way";
-            }
-            
-            $sign_date = $row['sign_date'];
-            if(isset($sign_date) && $sign_date !== ''){
-                $flag = '1';
-                
-                $action = $action."<br>تاريخ توقيع الاتفاقية : $sign_date";
-            }
-            
-            if($flag === '1'){
-                $empid = $_SESSION['id'];
-                
-                $queryu = "SELECT * FROM user WHERE id='$empid'";
-                $resultu = mysqli_query($conn, $queryu);
-                $rowu = mysqli_fetch_array($resultu);
-                $emp_name = $rowu['name'];
-                
-                $querylog = "INSERT INTO logs (empid, emp_name, action) VALUES ('$empid', '$emp_name', '$action')";
-                $resultlog = mysqli_query($conn, $querylog);
-            }
-            
-            $query = "DELETE FROM consultations WHERE id='$id'";
-            $result = mysqli_query($conn, $query);
+            $user_stmt->close();
         }
     }
+    
     header("Location: Agreements.php");
     exit();
 ?>
