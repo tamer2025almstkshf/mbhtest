@@ -1,18 +1,12 @@
-# PHP Composer dependencies
+# Composer dependencies
 /vendor/
 
-# Environment variables
+# Environment files
 .env
 
-# PHP error log
-error_log
-
-# Docker-specific files
-/.dockerignore
-
-# IDE-specific files (e.g., VS Code)
-.vscode/
-
-# OS generated files
+# Local development files
 .DS_Store
-thumbs.db
+/composer.phar
+
+# Testing configuration
+phpunit.xml

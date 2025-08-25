@@ -1,34 +1,36 @@
 <?php
-// Load Composer's autoloader, which is essential for modern PHP and loading packages.
+
+// Use Composer's autoloader for modern dependency management.
 require_once __DIR__ . '/vendor/autoload.php';
 
-// Load the .env file from the project root.
+// Load environment variables from the .env file.
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
-// Set the application's default timezone.
+// Set the default timezone for the application.
 date_default_timezone_set('Asia/Dubai');
 
-// Read all database credentials from the secure .env file.
-$servername = getenv('DB_HOST'); // This will correctly be 'db' for the Docker container.
-$username   = getenv('DB_USER');
-$password   = getenv('DB_PASS');
-$dbname     = getenv('DB_NAME');
+// Retrieve database credentials from environment variables.
+$servername = $_ENV['DB_HOST'];
+$username   = $_ENV['DB_USER'];
+$password   = $_ENV['DB_PASS'];
+$dbname     = $_ENV['DB_NAME'];
 
-// Create the one and only database connection object.
+// Establish a single, reusable database connection.
 $conn = new mysqli($servername, $username, $password, $dbname);
 
-// Check for connection errors and stop execution if it fails.
-if($conn->connect_error){
-    // In production, this should be logged to a file, not shown to the user.
-    die('Database Connection Error: ' . $conn->connect_error);
+// Terminate the script with a clear error message if the connection fails.
+if ($conn->connect_error) {
+    // In a production environment, this error should be logged, not displayed.
+    error_log('Database Connection Error: ' . $conn->connect_error);
+    http_response_code(500);
+    die('Unable to connect to the database.');
 }
 
-// Set the character set to handle Arabic text correctly.
+// Ensure the connection uses the UTF-8 character set for proper Arabic language support.
 $conn->set_charset("utf8mb4");
 
-// Standard security headers to help protect against common web vulnerabilities.
+// Apply standard security headers to mitigate common web vulnerabilities.
 header("X-XSS-Protection: 1; mode=block");
 header("X-Content-Type-Options: nosniff");
 header("X-Frame-Options: SAMEORIGIN");
-?>

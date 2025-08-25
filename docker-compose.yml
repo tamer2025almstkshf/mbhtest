@@ -4,13 +4,13 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: mbh_php_app
-    environment:
-      DB_HOST: db
-      DB_DATABASE: mbhdbase
-      DB_USERNAME: mbhDev
-      DB_PASSWORD: '#yuCyTJ!FI=K'
+    env_file:
+      - .env
     networks:
       - app-network
+    depends_on:
+      - db
+
   nginx:
     build:
       context: ./docker/nginx
@@ -24,24 +24,24 @@ services:
       - app
     networks:
       - app-network
+
   db:
     image: mysql:8.0
     container_name: mbh_mysql_db
     restart: unless-stopped
-    environment:
-      MYSQL_ROOT_PASSWORD: 'very_secure_root_password_123'
-      MYSQL_DATABASE: mbhdbase
-      MYSQL_USER: mbhDev
-      MYSQL_PASSWORD: '#yuCyTJ!FI=K'
+    env_file:
+      - .env
     volumes:
       - db-data:/var/lib/mysql
     ports:
       - "3306:3306"
     networks:
       - app-network
+
 networks:
   app-network:
     driver: bridge
+
 volumes:
   db-data:
     driver: local
