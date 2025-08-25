@@ -17,6 +17,7 @@ if (isset($_GET['id'])) {
             if ($client) {
                 $response = ['status' => 'success', 'data' => $client];
             } else {
+                $response['status'] = 'error';
                 $response['message'] = 'Client not found.';
             }
         } else {

@@ -73,7 +73,8 @@ class IntegrationTest extends TestCase
         $this->assertEquals(1, $data['data']['id']); // Assert the ID is 1 (or whatever you expect)
         // Add more assertions for other expected fields if needed
         $this->assertArrayHasKey('arname', $data['data']);
-        $this->assertArrayHasKey('engname', $data['data']);
+        $this->assertArrayHasKey('engname',
+         $data['data']);
     }
 
     public function testGetClientApiEndpointNotFound()

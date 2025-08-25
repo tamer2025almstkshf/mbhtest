@@ -18,6 +18,7 @@ if (isset($_GET['id'])) {
             if ($invoice) {
                 $response = ['status' => 'success', 'data' => $invoice];
             } else {
+                $response['status'] = 'error';
                 $response['message'] = 'Invoice not found.';
             }
         }

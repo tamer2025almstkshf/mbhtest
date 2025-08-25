@@ -1,4 +1,3 @@
-
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd"
@@ -6,12 +5,14 @@
          colors="true"
          cacheDirectory=".phpunit.cache">
     <testsuites>
-        <testsuite name="Application">
+        <testsuite name="default">
             <directory>tests</directory>
         </testsuite>
     </testsuites>
     <php>
-        <env file=".env.testing"/>
-        <env name="APP_ENV" value="testing"/>
+        <env name="DB_HOST" value="localhost"/>
+        <env name="DB_USER" value="user"/>
+        <env name="DB_PASS" value="password"/>
+        <env name="DB_NAME" value="mbhtest"/>
     </php>
 </phpunit>
