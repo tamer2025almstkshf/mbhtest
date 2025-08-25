@@ -2,6 +2,9 @@
 include_once 'connection.php';
 include_once 'login_check.php';
 include_once 'permissions_check.php';
+include_once 'src/I18n.php';
+
+I18n::load('translations/calls.yaml');
 
 if ($row_permcheck['call_aperm'] != 1) {
     header('Location: clientsCalls.php?error=noperms');
@@ -21,7 +24,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // --- Validation ---
     if (empty($caller_name) || empty($caller_no)) {
-        header('Location: callAdd.php?error=missingfields&branch=' . urlencode($branch));
+        $error_message = urlencode(I18n::get('error_missing_fields'));
+        header("Location: callAdd.php?error={$error_message}&branch=" . urlencode($branch));
         exit();
     }
 
@@ -46,15 +50,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($stmt->execute()) {
             // Success
-            header('Location: clientsCalls.php?status=added&branch=' . urlencode($branch));
+            $success_message = urlencode(I18n::get('add_success'));
+            header("Location: clientsCalls.php?status={$success_message}&branch=" . urlencode($branch));
         } else {
             // Database execution error
-            header('Location: callAdd.php?error=dberror&branch=' . urlencode($branch));
+            $error_message = urlencode(I18n::get('error_db'));
+            header("Location: callAdd.php?error={$error_message}&branch=" . urlencode($branch));
         }
         $stmt->close();
     } else {
         // SQL statement preparation error
-        header('Location: callAdd.php?error=preparefailed&branch=' . urlencode($branch));
+        $error_message = urlencode(I18n::get('error_prepare_failed'));
+        header("Location: callAdd.php?error={$error_message}&branch=" . urlencode($branch));
     }
 
     $conn->close();

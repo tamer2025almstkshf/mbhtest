@@ -1,7 +1,10 @@
 <?php
     include_once 'connection.php';
     include_once 'login_check.php';
+    include_once 'src/I18n.php';
 
+    $i18n = new I18n();
+    $i18n->loadTranslations('translations/Accounts.yaml');
     // Use a prepared statement to securely fetch user permission data.
     $user_id = $_SESSION['id'];
     $stmt = $conn->prepare("SELECT * FROM user WHERE id = ?");
@@ -18,9 +21,9 @@
     }
 ?>
 <!DOCTYPE html>
-<html dir="rtl">
+<html dir="<?php echo $i18n->getDirection(); ?>">
 <head>
-    <title>محمد بني هاشم للمحاماة و الاستشارات القانونية</title>
+    <title><?php echo $i18n->translate('title'); ?></title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="robots" content="noindex, nofollow">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -51,14 +54,14 @@
                 <br><br>
                 <div style="height: 80vh; display: flex; justify-content: center; align-items: center;">
                     <div class="advinputs-container" style="max-height: 80vh; overflow-y: auto; width: fit-content">
-                        <h2 class="advinputs-h2">الحسابات</h2>
+                        <h2 class="advinputs-h2"><?php echo $i18n->translate('accounts'); ?></h2>
                         <div class="links-container">
                             <div class="links3">
                                 <?php if (!empty($user_permissions['accfinance_rperm'])) { ?>
                                     <div class="link-align">
                                         <a href="Finance.php" target="_blank" class="link link2">
                                             <div class="images-style" style="background-image: url('img/finance.png');"></div>
-                                            <p class="link-topic">قسم المالية</p>
+                                            <p class="link-topic"><?php echo $i18n->translate('finance_department'); ?></p>
                                         </a>
                                     </div>
                                 <?php } ?>
@@ -66,7 +69,7 @@
                                     <div class="link-align">
                                         <a href="SubCategory.php" target="_blank" class="link link2">
                                             <div class="images-style" style="background-image: url('img/subcategory.png');"></div>
-                                            <p class="link-topic">البنود الفرعية</p>
+                                            <p class="link-topic"><?php echo $i18n->translate('sub_items'); ?></p>
                                         </a>
                                     </div>
                                 <?php } ?>
@@ -74,7 +77,7 @@
                                     <div class="link-align">
                                         <a href="BankAccs.php" target="_blank" class="link link2">
                                             <div class="images-style" style="background-image: url('img/bankaccs.png');"></div>
-                                            <p class="link-topic">حسابات البنوك</p>
+                                            <p class="link-topic"><?php echo $i18n->translate('bank_accounts'); ?></p>
                                         </a>
                                     </div>
                                 <?php } ?>
@@ -82,7 +85,7 @@
                                     <div class="link-align">
                                         <a href="CasesFees.php" target="_blank" class="link link2">
                                             <div class="images-style" style="background-image: url('img/fees.png');"></div>
-                                            <p class="link-topic">اتعاب القضايا</p>
+                                            <p class="link-topic"><?php echo $i18n->translate('case_fees'); ?></p>
                                         </a>
                                     </div>
                                 <?php } ?>
@@ -90,7 +93,7 @@
                                     <div class="link-align">
                                         <a href="income.php" target="_blank" class="link link2">
                                             <div class="images-style" style="background-image: url('img/income.png');"></div>
-                                            <p class="link-topic">الايرادات</p>
+                                            <p class="link-topic"><?php echo $i18n->translate('revenues'); ?></p>
                                         </a>
                                     </div>
                                 <?php } ?>
@@ -98,7 +101,7 @@
                                     <div class="link-align">
                                         <a href="expenses.php" target="_blank" class="link link2">
                                             <div class="images-style" style="background-image: url('img/expenses.png');"></div>
-                                            <p class="link-topic">المصروفات</p>
+                                            <p class="link-topic"><?php echo $i18n->translate('expenses'); ?></p>
                                         </a>
                                     </div>
                                 <?php } ?>
@@ -109,7 +112,7 @@
             </div>
             <?php } else { ?>
                 <div class="web-page">
-                    <p style="text-align: center; margin-top: 50px;">You do not have permission to view this section.</p>
+                    <p style="text-align: center; margin-top: 50px;"><?php echo $i18n->translate('no_permission'); ?></p>
                 </div>
             <?php } ?>
         </div>

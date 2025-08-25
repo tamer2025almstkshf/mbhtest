@@ -1,6 +1,10 @@
 <?php
     include_once 'connection.php';
     include_once 'login_check.php';
+    include_once 'src/I18n.php';
+
+    $i18n = new I18n();
+    $i18n->loadTranslations('translations/AddTask.yaml');
 
     // --- Permission Check ---
     $user_id = $_SESSION['id'];
@@ -12,7 +16,7 @@
     $stmt->close();
 
     if (empty($perm_row['admjobs_aperm'])) {
-        die("You do not have permission to access this page.");
+        die($i18n->translate('no_permission'));
     }
 
     // --- Input Handling ---
@@ -79,7 +83,7 @@
         $stmt->close();
         // IDOR check: If no file data is returned, the user might be trying to access an unauthorized file.
         if (!$file_data) {
-            die("File not found or you do not have permission to access it.");
+            die($i18n->translate('file_not_found'));
         }
     }
 
@@ -90,30 +94,30 @@
         $stmt->execute();
         $result = $stmt->get_result()->fetch_assoc();
         $stmt->close();
-        return $result['arname'] ?? 'Unknown';
+        return $result['arname'] ?? $GLOBALS['i18n']->translate('unknown');
     }
 ?>
 <!DOCTYPE html>
-<html dir="rtl">
+<html dir="<?php echo $i18n->getDirection(); ?>">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>إضافة عمل إداري</title>
+    <title><?php echo $i18n->translate('add_admin_task'); ?></title>
     <link rel="stylesheet" type="text/css" href="css/style.css" />
 </head>
 <body>
 <div class="container">
     <?php include_once 'sidebar.php'; ?>
     <div class="l_data">
-        <h2>إضافة عمل إداري</h2>
+        <h2><?php echo $i18n->translate('add_admin_task'); ?></h2>
         
         <form method="get" action="AddTask.php">
              <fieldset>
-                <legend>بحث عن ملف</legend>
-                <input type="radio" name="section" value="1" <?php if ($section == 1) echo 'checked'; ?>> رقم الملف
-                <input type="radio" name="section" value="2" <?php if ($section == 2) echo 'checked'; ?>> اسم الموكل/الخصم
-                <input type="radio" name="section" value="3" <?php if ($section == 3) echo 'checked'; ?>> رقم القضية
-                <input type="radio" name="section" value="4" <?php if ($section == 4) echo 'checked'; ?>> عمل إداري بدون ملف
-                <button type="submit">بحث</button>
+                <legend><?php echo $i18n->translate('search_for_file'); ?></legend>
+                <input type="radio" name="section" value="1" <?php if ($section == 1) echo 'checked'; ?>> <?php echo $i18n->translate('file_number'); ?>
+                <input type="radio" name="section" value="2" <?php if ($section == 2) echo 'checked'; ?>> <?php echo $i18n->translate('client_opponent_name'); ?>
+                <input type="radio" name="section" value="3" <?php if ($section == 3) echo 'checked'; ?>> <?php echo $i18n->translate('case_number'); ?>
+                <input type="radio" name="section" value="4" <?php if ($section == 4) echo 'checked'; ?>> <?php echo $i18n->translate('task_without_file'); ?>
+                <button type="submit"><?php echo $i18n->translate('search'); ?></button>
             </fieldset>
         </form>
 
@@ -121,11 +125,11 @@
             <table width="100%" border="1">
                 <thead>
                     <tr>
-                        <th>رقم الملف</th>
-                        <th>الموضوع</th>
-                        <th>الموكل</th>
-                        <th>الخصم</th>
-                        <th>اختيار</th>
+                        <th><?php echo $i18n->translate('file_number'); ?></th>
+                        <th><?php echo $i18n->translate('subject'); ?></th>
+                        <th><?php echo $i18n->translate('client'); ?></th>
+                        <th><?php echo $i18n->translate('opponent'); ?></th>
+                        <th><?php echo $i18n->translate('select'); ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -135,7 +139,7 @@
                         <td><?php echo htmlspecialchars($row['file_subject'], ENT_QUOTES, 'UTF-8'); ?></td>
                         <td><?php echo htmlspecialchars(getClientName($conn, $row['file_client']), ENT_QUOTES, 'UTF-8'); ?></td>
                         <td><?php echo htmlspecialchars(getClientName($conn, $row['file_opponent']), ENT_QUOTES, 'UTF-8'); ?></td>
-                        <td><a href="?fno=<?php echo htmlspecialchars($row['file_id'], ENT_QUOTES, 'UTF-8'); ?>&agree=1">إنشاء مهمة لهذا الملف</a></td>
+                        <td><a href="?fno=<?php echo htmlspecialchars($row['file_id'], ENT_QUOTES, 'UTF-8'); ?>&agree=1"><?php echo $i18n->translate('create_task_for_file'); ?></a></td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -150,16 +154,16 @@
                 <?php endif; ?>
                 
                 <fieldset>
-                    <legend><?php echo $section == 4 ? 'إضافة عمل إداري عام' : 'إضافة عمل للملف رقم: ' . htmlspecialchars($fno, ENT_QUOTES, 'UTF-8'); ?></legend>
+                    <legend><?php echo $section == 4 ? $i18n->translate('add_general_admin_task') : $i18n->translate('add_task_for_file_no', ['fno' => htmlspecialchars($fno, ENT_QUOTES, 'UTF-8')]); ?></legend>
                     
                     <?php if (isset($file_data)): ?>
-                        <p><strong>نوع القضية:</strong> <?php echo htmlspecialchars($file_data['fcase_type'], ENT_QUOTES, 'UTF-8'); ?></p>
+                        <p><strong><?php echo $i18n->translate('case_type'); ?></strong> <?php echo htmlspecialchars($file_data['fcase_type'], ENT_QUOTES, 'UTF-8'); ?></p>
                     <?php endif; ?>
 
                     <p>
-                        <label>الموظف المكلف:</label>
+                        <label><?php echo $i18n->translate('assigned_employee'); ?></label>
                         <select name="re_name" required>
-                            <option value="">-- اختر موظف --</option>
+                            <option value=""><?php echo $i18n->translate('select_employee'); ?></option>
                             <?php
                             // Use prepared statement for security
                             $emp_stmt = $conn->prepare("SELECT id, name FROM user WHERE status = 'active' ORDER BY name");
@@ -173,9 +177,9 @@
                         </select> *
                     </p>
                     <p>
-                        <label>نوع العمل:</label>
+                        <label><?php echo $i18n->translate('task_type'); ?></label>
                         <select name="type_name" required>
-                             <option value="">-- اختر نوع العمل --</option>
+                             <option value=""><?php echo $i18n->translate('select_task_type'); ?></option>
                             <?php
                             // Use prepared statement for security
                             $job_stmt = $conn->prepare("SELECT id, job_name FROM job_name ORDER BY job_name");
@@ -189,20 +193,20 @@
                         </select> *
                     </p>
                     <p>
-                        <label>الأهمية:</label>
-                        <input type="radio" name="busi_priority" value="0" checked> عادي
-                        <input type="radio" name="busi_priority" value="1"> عاجل
+                        <label><?php echo $i18n->translate('priority'); ?></label>
+                        <input type="radio" name="busi_priority" value="0" checked> <?php echo $i18n->translate('normal'); ?>
+                        <input type="radio" name="busi_priority" value="1"> <?php echo $i18n->translate('urgent'); ?>
                     </p>
                     <p>
-                        <label>تاريخ تنفيذ العمل:</label>
+                        <label><?php echo $i18n->translate('execution_date'); ?></label>
                         <input type="date" name="busi_date">
                     </p>
                     <p>
-                        <label>التفاصيل:</label><br>
+                        <label><?php echo $i18n->translate('details'); ?></label><br>
                         <textarea name="busi_notes" rows="4" style="width: 98%"></textarea>
                     </p>
                     <p>
-                        <input type="submit" value="حفظ وتخزين العمل الإدارى" class="button" name="save_task_fid"/>
+                        <input type="submit" value="<?php echo $i18n->translate('save_task'); ?>" class="button" name="save_task_fid"/>
                     </p>
                 </fieldset>
             </form>

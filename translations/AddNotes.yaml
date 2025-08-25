@@ -1,0 +1,12 @@
+en:
+    add_edit_note: "Add/Edit Note"
+    save_data: "Save Data"
+    untitled: "Untitled"
+    edit_note_log: "Edit note in file number {fno}"
+    add_note_log: "Write a note for file number {fno}"
+ar:
+    add_edit_note: "إضافة / تعديل مذكرة"
+    save_data: "حفظ البيانات"
+    untitled: "بلا عنوان"
+    edit_note_log: "تعديل مذكرة في الملف رقم {fno}"
+    add_note_log: "كتابة مذكرة للملف رقم {fno}"
