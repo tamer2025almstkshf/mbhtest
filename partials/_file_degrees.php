@@ -1,29 +1,22 @@
 <?php
 // FILE: partials/_file_degrees.php
-/**
- * Partial view for managing litigation degrees in the file edit form.
- *
- * Uses variables from FileEdit.php:
- * - $data['file_degrees'], $data['degrees'], $data['client_statuses'] (arrays)
- * - $row_permcheck (array)
- */
 ?>
 
 <section class="form-section">
     <div class="section-header">
-        <h2>درجات التقاضي (<?php echo count($data['file_degrees']); ?>)</h2>
+        <h2><?php echo __('litigation_degrees'); ?> (<?php echo count($data['file_degrees']); ?>)</h2>
     </div>
 
     <div class="table-responsive">
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>الدرجة</th>
-                    <th>رقم القضية</th>
-                    <th>السنة</th>
-                    <th>صفة الموكل</th>
-                    <th>صفة الخصم</th>
-                    <th>تاريخ الإدخال</th>
+                    <th><?php echo __('degree'); ?></th>
+                    <th><?php echo __('case_number'); ?></th>
+                    <th><?php echo __('year'); ?></th>
+                    <th><?php echo __('client_status'); ?></th>
+                    <th><?php echo __('opponent_status'); ?></th>
+                    <th><?php echo __('entry_date'); ?></th>
                     <th></th> <!-- Actions -->
                 </tr>
             </thead>
@@ -33,7 +26,7 @@
                 <tr class="add-new-row">
                     <td>
                         <select name="fdegree_edit" class="form-input">
-                             <option value="">-- اختر --</option>
+                             <option value="">-- <?php echo __('select'); ?> --</option>
                             <?php foreach($data['degrees'] as $degree): ?>
                                 <option value="<?php echo safe_output($degree['degree_name']); ?>"><?php echo safe_output($degree['degree_name']); ?></option>
                             <?php endforeach; ?>
@@ -43,7 +36,7 @@
                     <td><input type="number" name="fyear_edit" class="form-input"></td>
                     <td>
                         <select name="fccharacteristic_edit" class="form-input">
-                            <option value="">-- اختر --</option>
+                            <option value="">-- <?php echo __('select'); ?> --</option>
                              <?php foreach($data['client_statuses'] as $status): ?>
                                 <option value="<?php echo safe_output($status['arname']); ?>"><?php echo safe_output($status['arname']); ?></option>
                             <?php endforeach; ?>
@@ -51,7 +44,7 @@
                     </td>
                     <td>
                          <select name="focharacteristic_edit" class="form-input">
-                            <option value="">-- اختر --</option>
+                            <option value="">-- <?php echo __('select'); ?> --</option>
                              <?php foreach($data['client_statuses'] as $status): ?>
                                 <option value="<?php echo safe_output($status['arname']); ?>"><?php echo safe_output($status['arname']); ?></option>
                             <?php endforeach; ?>
@@ -64,7 +57,7 @@
 
                 <!-- Existing Degrees -->
                 <?php if (empty($data['file_degrees'])): ?>
-                    <tr><td colspan="7">لا توجد درجات تقاضي مسجلة.</td></tr>
+                    <tr><td colspan="7"><?php echo __('no_litigation_degrees_recorded'); ?></td></tr>
                 <?php else: ?>
                     <?php foreach($data['file_degrees'] as $degree): ?>
                     <tr>
@@ -76,7 +69,7 @@
                         <td><?php echo safe_output($degree['timestamp']); ?></td>
                         <td class="actions-cell">
                             <?php if($row_permcheck['degree_dperm'] == 1): ?>
-                                <a href="editfile.php?diddel=<?php echo $degree['id']; ?>&fid=<?php echo $fileId; ?>" class="action-btn delete" onclick="return confirm('هل أنت متأكد؟')"><i class='bx bx-trash'></i></a>
+                                <a href="editfile.php?diddel=<?php echo $degree['id']; ?>&fid=<?php echo $fileId; ?>" class="action-btn delete" onclick="return confirm('<?php echo __('confirm_delete'); ?>')"><i class='bx bx-trash'></i></a>
                             <?php endif; ?>
                         </td>
                     </tr>

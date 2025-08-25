@@ -1,37 +1,27 @@
 <?php
 // FILE: Contracts.php
 
-/**
- * Page for managing contracts and licenses.
- * Allows users to view, add, edit, and delete contracts.
- */
-
 // 1. INCLUDES & BOOTSTRAPPING
-// =============================================================================
-include_once 'connection.php';
-include_once 'login_check.php';
+require_once __DIR__ . '/bootstrap.php';
 include_once 'permissions_check.php';
 include_once 'safe_output.php';
 
 // 2. PERMISSIONS CHECK
-// =============================================================================
-$can_view = $row_permcheck['emp_perms_view'] == 1; // Assuming 'view' perm exists
+$can_view = $row_permcheck['emp_perms_view'] == 1; 
 $can_add = $row_permcheck['emp_perms_add'] == 1;
 $can_edit = $row_permcheck['emp_perms_edit'] == 1;
 $can_delete = $row_permcheck['emp_perms_delete'] == 1;
 
 if (!$can_view && !$can_add && !$can_edit && !$can_delete) {
     http_response_code(403);
-    die('You do not have sufficient permissions to access this page.');
+    die(__('no_permission_to_view'));
 }
 
 // 3. DATA FETCHING & INITIALIZATION
-// =============================================================================
-$page_mode = 'list'; // Default mode
+$page_mode = 'list'; 
 $edit_data = null;
 $attachment_data = null;
 
-// Determine page mode (add, edit, view attachments)
 if (isset($_GET['edit']) && $can_edit) {
     $page_mode = 'edit';
     $id = (int)$_GET['id'];
@@ -62,11 +52,13 @@ while ($row = $result->fetch_assoc()) {
 }
 $stmt->close();
 
+use App\I18n;
+$currentLocale = I18n::getLocale();
 ?>
 <!DOCTYPE html>
-<html dir="rtl" lang="ar">
+<html dir="<?php echo ($currentLocale === 'ar') ? 'rtl' : 'ltr'; ?>" lang="<?php echo $currentLocale; ?>">
 <head>
-    <title>العقود والرخص</title>
+    <title><?php echo __('contracts_and_licenses'); ?></title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -82,9 +74,9 @@ $stmt->close();
             <main class="web-page">
                 <div class="table-container">
                     <header class="table-header">
-                        <h3>العقود والرخص</h3>
+                        <h3><?php echo __('contracts_and_licenses'); ?></h3>
                         <?php if ($can_add): ?>
-                            <button class="add-btn" onclick="openModal('addEditModal')"><i class='bx bx-plus'></i> إضافة عقد</button>
+                            <button class="add-btn" onclick="openModal('addEditModal')"><i class='bx bx-plus'></i> <?php echo __('add_contract'); ?></button>
                         <?php endif; ?>
                     </header>
 
@@ -92,35 +84,35 @@ $stmt->close();
                         <table class="info-table" id="contractsTable">
                             <thead>
                                 <tr>
-                                    <th>المالك</th>
-                                    <th>النوع</th>
-                                    <th>الفترة الزمنية</th>
-                                    <th>الفرع</th>
-                                    <th>المكان</th>
-                                    <th width="100px">الإجراءات</th>
+                                    <th><?php echo __('owner'); ?></th>
+                                    <th><?php echo __('type'); ?></th>
+                                    <th><?php echo __('time_period'); ?></th>
+                                    <th><?php echo __('branch'); ?></th>
+                                    <th><?php echo __('place'); ?></th>
+                                    <th width="100px"><?php echo __('actions'); ?></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php if (empty($contracts)): ?>
-                                    <tr><td colspan="6">لا توجد عقود لعرضها.</td></tr>
+                                    <tr><td colspan="6"><?php echo __('no_contracts_to_display'); ?></td></tr>
                                 <?php else: ?>
                                     <?php foreach ($contracts as $contract): ?>
                                     <tr>
                                         <td><?php echo safe_output($contract['owner']); ?></td>
                                         <td><?php echo safe_output($contract['rent_lic']); ?></td>
                                         <td>
-                                            من: <?php echo safe_output($contract['starting_d']); ?><br>
-                                            إلى: <?php echo safe_output($contract['ending_d']); ?>
+                                            <?php echo __('from'); ?>: <?php echo safe_output($contract['starting_d']); ?><br>
+                                            <?php echo __('to'); ?>: <?php echo safe_output($contract['ending_d']); ?>
                                         </td>
                                         <td><?php echo safe_output($contract['branch']); ?></td>
                                         <td><?php echo safe_output($contract['place']); ?></td>
                                         <td class="actions-cell">
-                                            <a href="?attachments=1&id=<?php echo $contract['id']; ?>" class="action-btn" title="المرفقات"><i class='bx bx-paperclip'></i></a>
+                                            <a href="?attachments=1&id=<?php echo $contract['id']; ?>" class="action-btn" title="<?php echo __('attachments'); ?>"><i class='bx bx-paperclip'></i></a>
                                             <?php if ($can_edit): ?>
-                                                <a href="?edit=1&id=<?php echo $contract['id']; ?>" class="action-btn" title="تعديل"><i class='bx bx-edit'></i></a>
+                                                <a href="?edit=1&id=<?php echo $contract['id']; ?>" class="action-btn" title="<?php echo __('edit'); ?>"><i class='bx bx-edit'></i></a>
                                             <?php endif; ?>
                                             <?php if ($can_delete): ?>
-                                                <a href="deletecontract.php?id=<?php echo $contract['id']; ?>" class="action-btn delete" title="حذف" onclick="return confirm('هل أنت متأكد من رغبتك في حذف هذا العقد؟')"><i class='bx bx-trash'></i></a>
+                                                <a href="deletecontract.php?id=<?php echo $contract['id']; ?>" class="action-btn delete" title="<?php echo __('delete'); ?>" onclick="return confirm('<?php echo __('confirm_delete_contract'); ?>')"><i class='bx bx-trash'></i></a>
                                             <?php endif; ?>
                                         </td>
                                     </tr>
@@ -138,7 +130,7 @@ $stmt->close();
     <div id="addEditModal" class="modal-overlay" style="display: <?php echo ($page_mode === 'add' || $page_mode === 'edit') ? 'block' : 'none'; ?>">
         <div class="modal-content">
             <header class="modal-header">
-                <h4><?php echo ($page_mode === 'edit') ? 'تعديل بيانات العقد' : 'عقد جديد'; ?></h4>
+                <h4><?php echo ($page_mode === 'edit') ? __('edit_contract_details') : __('new_contract'); ?></h4>
                 <a href="Contracts.php" class="close-button">&times;</a>
             </header>
             <form action="<?php echo ($page_mode === 'edit') ? 'contedit.php' : 'contadd.php'; ?>" method="post" enctype="multipart/form-data">
@@ -148,53 +140,52 @@ $stmt->close();
                 <div class="modal-body">
                     <div class="form-grid">
                         <div class="form-group">
-                            <label for="owner">المالك <span class="required">*</span></label>
+                            <label for="owner"><?php echo __('owner'); ?> <span class="required">*</span></label>
                             <input class="form-input" id="owner" name="owner" value="<?php echo safe_output($edit_data['owner'] ?? ''); ?>" type="text" required>
                         </div>
                         <div class="form-group">
-                            <label for="rent_lic">النوع</label>
+                            <label for="rent_lic"><?php echo __('type'); ?></label>
                             <select class="form-input" id="rent_lic" name="rent_lic">
-                                <option value="عقد إيجار" <?php if (($edit_data['rent_lic'] ?? '') === 'عقد إيجار') echo 'selected'; ?>>عقد إيجار</option>
-                                <option value="رخصة تجارية" <?php if (($edit_data['rent_lic'] ?? '') === 'رخصة تجارية') echo 'selected'; ?>>رخصة تجارية</option>
+                                <option value="عقد إيجار" <?php if (($edit_data['rent_lic'] ?? '') === 'عقد إيجار') echo 'selected'; ?>><?php echo __('lease_contract'); ?></option>
+                                <option value="رخصة تجارية" <?php if (($edit_data['rent_lic'] ?? '') === 'رخصة تجارية') echo 'selected'; ?>><?php echo __('trade_license'); ?></option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="starting_d">يبدأ من</label>
+                            <label for="starting_d"><?php echo __('starts_from'); ?></label>
                             <input class="form-input" id="starting_d" name="starting_d" value="<?php echo safe_output($edit_data['starting_d'] ?? ''); ?>" type="date">
                         </div>
                         <div class="form-group">
-                            <label for="ending_d">ينتهي في</label>
+                            <label for="ending_d"><?php echo __('ends_on'); ?></label>
                             <input class="form-input" id="ending_d" name="ending_d" value="<?php echo safe_output($edit_data['ending_d'] ?? ''); ?>" type="date">
                         </div>
                         <div class="form-group">
-                            <label for="place">المكان</label>
+                            <label for="place"><?php echo __('place'); ?></label>
                             <input class="form-input" id="place" name="place" value="<?php echo safe_output($edit_data['place'] ?? ''); ?>" type="text">
                         </div>
                          <div class="form-group">
-                            <label for="branch">الفرع</label>
+                            <label for="branch"><?php echo __('branch'); ?></label>
                             <select class="form-input" id="branch" name="branch">
-                                <option value="الشارقة" <?php if (($edit_data['branch'] ?? '') === 'الشارقة') echo 'selected'; ?>>الشارقة</option>
-                                <option value="دبي" <?php if (($edit_data['branch'] ?? '') === 'دبي') echo 'selected'; ?>>دبي</option>
-                                <option value="عجمان" <?php if (($edit_data['branch'] ?? '') === 'عجمان') echo 'selected'; ?>>عجمان</option>
+                                <option value="الشارقة" <?php if (($edit_data['branch'] ?? '') === 'الشارقة') echo 'selected'; ?>><?php echo __('sharjah'); ?></option>
+                                <option value="دبي" <?php if (($edit_data['branch'] ?? '') === 'دبي') echo 'selected'; ?>><?php echo __('dubai'); ?></option>
+                                <option value="عجمان" <?php if (($edit_data['branch'] ?? '') === 'عجمان') echo 'selected'; ?>><?php echo __('ajman'); ?></option>
                             </select>
                         </div>
                         <div class="form-group full-width">
-                            <label for="notes">العنوان/ملاحظات</label>
+                            <label for="notes"><?php echo __('address_notes'); ?></label>
                             <textarea class="form-input" id="notes" name="notes" rows="3"><?php echo safe_output($edit_data['notes'] ?? ''); ?></textarea>
                         </div>
                         
-                        <!-- Attachments can be simplified or handled with JS -->
                         <div class="form-group full-width">
-                             <label>المرفقات</label>
+                             <label><?php echo __('attachments'); ?></label>
                              <input type="file" name="cont_lic_pic" class="form-input">
-                             <?php if(!empty($edit_data['cont_lic_pic'])) echo '<p>الملف الحالي: '.basename(safe_output($edit_data['cont_lic_pic'])).'</p>'; ?>
+                             <?php if(!empty($edit_data['cont_lic_pic'])) echo '<p>' . __('current_file') . ': '.basename(safe_output($edit_data['cont_lic_pic'])).'</p>'; ?>
                         </div>
 
                     </div>
                 </div>
                 <footer class="modal-footer">
-                    <button type="submit" class="form-btn submit-btn">حفظ</button>
-                    <a href="Contracts.php" class="form-btn cancel-btn">إلغاء</a>
+                    <button type="submit" class="form-btn submit-btn"><?php echo __('save'); ?></button>
+                    <a href="Contracts.php" class="form-btn cancel-btn"><?php echo __('cancel'); ?></a>
                 </footer>
             </form>
         </div>
@@ -204,7 +195,7 @@ $stmt->close();
     <div id="attachmentsModal" class="modal-overlay" style="display: <?php echo ($page_mode === 'attachments') ? 'block' : 'none'; ?>">
         <div class="modal-content">
              <header class="modal-header">
-                <h4>مرفقات العقد رقم: <?php echo safe_output($attachment_data['id'] ?? ''); ?></h4>
+                <h4><?php echo __('contract_attachments_for_id'); ?> <?php echo safe_output($attachment_data['id'] ?? ''); ?></h4>
                 <a href="Contracts.php" class="close-button">&times;</a>
             </header>
             <div class="modal-body">
@@ -212,7 +203,7 @@ $stmt->close();
                     <ul class="attachment-list">
                         <?php for ($i = 0; $i < 5; $i++): 
                             $key = ($i == 0) ? 'cont_lic_pic' : 'attachment' . $i;
-                            $label = ($i == 0) ? 'صورة العقد / الرخصة' : 'مرفق ' . $i;
+                            $label = ($i == 0) ? __('contract_license_image') : __('attachment') . ' ' . $i;
                             if (!empty($attachment_data[$key])): ?>
                                 <li>
                                     <i class='bx bxs-file'></i>
@@ -221,7 +212,7 @@ $stmt->close();
                                         <?php echo basename(safe_output($attachment_data[$key])); ?>
                                     </a>
                                     <?php if($can_delete): ?>
-                                    <a href="contattachdel.php?id=<?php echo safe_output($attachment_data['id']);?>&del=<?php echo $key; ?>&page=Contracts.php" class="delete-link" onclick="return confirm('هل أنت متأكد؟')">
+                                    <a href="contattachdel.php?id=<?php echo safe_output($attachment_data['id']);?>&del=<?php echo $key; ?>&page=Contracts.php" class="delete-link" onclick="return confirm('<?php echo __('confirm_delete'); ?>')">
                                         <i class='bx bx-trash'></i>
                                     </a>
                                     <?php endif; ?>
@@ -230,12 +221,11 @@ $stmt->close();
                         <?php endfor; ?>
                     </ul>
                 <?php else: ?>
-                    <p>لا توجد مرفقات لعرضها.</p>
+                    <p><?php echo __('no_attachments_to_display'); ?></p>
                 <?php endif; ?>
             </div>
         </div>
     </div>
-
 
     <script src="js/popups.js"></script>
     <script src="js/tablePages.js"></script>

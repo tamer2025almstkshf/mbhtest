@@ -1,32 +1,25 @@
 <?php
 /**
  * View file for displaying the clients list.
- *
- * This file is responsible for the presentation logic of the clients page.
- * It expects the following variables to be passed to it:
- *
- * @var array $clients The list of clients to display.
- * @var array $row_permcheck An array containing the user's permissions.
- * @var string $type The current filter type ('all', 'clients', 'opponents', 'subs').
  */
 ?>
 
 <div class="container-fluid mt-4">
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h3><i class="bx bxs-user-detail"></i> العملاء</h3>
+            <h3><i class="bx bxs-user-detail"></i> <?php echo __('clients'); ?></h3>
             <div class="d-flex align-items-center">
                 <form id="filterForm" action="clients.php" method="GET" class="d-flex me-2">
                     <select class="form-select" name="type" onchange="document.getElementById('filterForm').submit()">
-                        <option value="all" <?= $type === 'all' ? 'selected' : '' ?>>الجميع</option>
-                        <option value="clients" <?= $type === 'clients' ? 'selected' : '' ?>>الموكلين</option>
-                        <option value="opponents" <?= $type === 'opponents' ? 'selected' : '' ?>>الخصوم</option>
-                        <option value="subs" <?= $type === 'subs' ? 'selected' : '' ?>>عناوين هامة</option>
+                        <option value="all" <?= $type === 'all' ? 'selected' : '' ?>><?php echo __('all'); ?></option>
+                        <option value="clients" <?= $type === 'clients' ? 'selected' : '' ?>><?php echo __('clients'); ?></option>
+                        <option value="opponents" <?= $type === 'opponents' ? 'selected' : '' ?>><?php echo __('opponents'); ?></option>
+                        <option value="subs" <?= $type === 'subs' ? 'selected' : '' ?>><?php echo __('important_addresses'); ?></option>
                     </select>
                 </form>
                 <?php if ($row_permcheck['clients_aperm'] == 1) : ?>
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#clientModal" onclick="prepareAddModal()">
-                        <i class="bx bx-plus"></i> إضافة جديد
+                        <i class="bx bx-plus"></i> <?php echo __('add_new'); ?>
                     </button>
                 <?php endif; ?>
             </div>
@@ -36,12 +29,12 @@
                 <table class="table table-striped table-hover">
                     <thead class="table-dark">
                         <tr>
-                            <th>الكود</th>
-                            <th>الإسم</th>
-                            <th>الفئة</th>
-                            <th>التصنيف</th>
-                            <th>بيانات الاتصال</th>
-                            <th>الاجراءات</th>
+                            <th><?php echo __('code'); ?></th>
+                            <th><?php echo __('name'); ?></th>
+                            <th><?php echo __('category'); ?></th>
+                            <th><?php echo __('classification'); ?></th>
+                            <th><?php echo __('contact_info'); ?></th>
+                            <th><?php echo __('actions'); ?></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -61,7 +54,7 @@
                                 </tr>
                             <?php endforeach; ?>
                         <?php else : ?>
-                            <tr><td colspan="6" class="text-center">لا يوجد عملاء.</td></tr>
+                            <tr><td colspan="6" class="text-center"><?php echo __('no_clients_found'); ?></td></tr>
                         <?php endif; ?>
                     </tbody>
                 </table>
@@ -86,12 +79,11 @@
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-        <button type="button" class="btn btn-primary" id="saveClientBtn">حفظ</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?php echo __('cancel'); ?></button>
+        <button type="button" class="btn btn-primary" id="saveClientBtn"><?php echo __('save'); ?></button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- We will move this script to its own file -->
 <script src="js/clients-page.js"></script>

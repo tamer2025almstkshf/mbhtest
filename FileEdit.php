@@ -1,36 +1,25 @@
 <?php
 // FILE: FileEdit.php
 
-/**
- * Main page for editing a case file and all its associated data.
- * This file acts as a controller, fetching all necessary data and then
- * including partial view files to render the form.
- */
-
 // 1. INCLUDES & BOOTSTRAPPING
-// =============================================================================
-include_once 'connection.php';
-include_once 'login_check.php';
+require_once __DIR__ . '/bootstrap.php';
 include_once 'permissions_check.php';
 include_once 'safe_output.php';
 include_once 'golden_pass.php';
 
 // 2. PERMISSIONS & INPUT VALIDATION
-// =============================================================================
 if ($row_permcheck['cfiles_eperm'] != 1) {
     http_response_code(403);
-    die('Access Denied: You do not have permission to edit files.');
+    die(__('no_permission_to_edit'));
 }
 
 $fileId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 if ($fileId <= 0) {
     http_response_code(400);
-    die('Invalid File ID provided.');
+    die(__('invalid_file_id'));
 }
 
 // 3. DATA FETCHING (Consolidated)
-// =============================================================================
-
 // Fetch core file details
 $stmt = $conn->prepare("SELECT * FROM file WHERE file_id = ?");
 $stmt->bind_param("i", $fileId);
@@ -40,7 +29,7 @@ $stmt->close();
 
 if (!$fileDetails) {
     http_response_code(404);
-    die('File not found.');
+    die(__('file_not_found'));
 }
 
 // Security check for secret folder
@@ -48,7 +37,7 @@ if ($admin != 1 && $fileDetails['secret_folder'] == 1) {
     $allowedUserIds = array_filter(array_map('trim', explode(',', $fileDetails['secret_emps'])));
     if (!in_array($_SESSION['id'], $allowedUserIds, true)) {
         http_response_code(403);
-        die('Access to this secret file is restricted.');
+        die(__('restricted_access_secret_file'));
     }
 }
 
@@ -77,7 +66,6 @@ $stmt_degrees->execute();
 $data['file_degrees'] = $stmt_degrees->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt_degrees->close();
 
-// ... Add similar fetches for sessions, tasks, attachments, etc. ...
 $stmt_sessions = $conn->prepare("SELECT * FROM session WHERE session_fid=? ORDER BY session_date DESC");
 $stmt_sessions->bind_param("i", $fileId);
 $stmt_sessions->execute();
@@ -97,12 +85,13 @@ $data['attachments'] = $stmt_attachments->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt_attachments->close();
 
 // 4. RENDER PAGE
-// =============================================================================
+use App\I18n;
+$currentLocale = I18n::getLocale();
 ?>
 <!DOCTYPE html>
-<html dir="rtl" lang="ar">
+<html dir="<?php echo ($currentLocale === 'ar') ? 'rtl' : 'ltr'; ?>" lang="<?php echo $currentLocale; ?>">
 <head>
-    <title>تعديل ملف رقم <?php echo safe_output($fileId); ?></title>
+    <title><?php echo __('edit_file_number') . ' ' . safe_output($fileId); ?></title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -146,7 +135,7 @@ $stmt_attachments->close();
 
                         <!-- Form Footer/Submit Button -->
                         <div class="form-footer">
-                            <button type="submit" name="save_file" class="green-button">حفظ البيانات</button>
+                            <button type="submit" name="save_file" class="green-button"><?php echo __('save_data'); ?></button>
                         </div>
                     </form>
                 </div>

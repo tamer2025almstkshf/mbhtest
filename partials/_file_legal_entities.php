@@ -1,25 +1,18 @@
 <?php
 // FILE: partials/_file_legal_entities.php
-/**
- * Partial view for managing legal entities (courts, police stations, etc.) in the file edit form.
- *
- * Uses variables from FileEdit.php:
- * - $fileDetails (array)
- * - $data['case_types'], $data['police_stations'], $data['prosecutions'], $data['courts'] (arrays)
- */
 ?>
 
 <section class="form-section">
     <div class="section-header">
-        <h2>المحاكم ومراكز الشرطة</h2>
+        <h2><?php echo __('courts_and_police_stations'); ?></h2>
     </div>
 
     <div class="grid-container">
         <!-- Case Type -->
         <div class="form-group">
-            <label for="fctype_edit">نوع القضية</label>
+            <label for="fctype_edit"><?php echo __('case_type'); ?></label>
             <select id="fctype_edit" name="fctype_edit" class="form-input">
-                <option value="">-- اختر نوع --</option>
+                <option value="">-- <?php echo __('select_type'); ?> --</option>
                 <?php foreach($data['case_types'] as $type): ?>
                     <option value="<?php echo safe_output($type['ct_name']); ?>" <?php if($fileDetails['fcase_type'] === $type['ct_name']) echo 'selected'; ?>>
                         <?php echo safe_output($type['ct_name']); ?>
@@ -30,9 +23,9 @@
 
         <!-- Police Station -->
         <div class="form-group">
-            <label for="fpolice_edit">مركز الشرطة</label>
+            <label for="fpolice_edit"><?php echo __('police_station'); ?></label>
             <select id="fpolice_edit" name="fpolice_edit" class="form-input">
-                 <option value="">-- اختر مركز --</option>
+                 <option value="">-- <?php echo __('select_station'); ?> --</option>
                 <?php foreach($data['police_stations'] as $station): ?>
                     <option value="<?php echo safe_output($station['policestation_name']); ?>" <?php if($fileDetails['fpolice_station'] === $station['policestation_name']) echo 'selected'; ?>>
                         <?php echo safe_output($station['policestation_name']); ?>
@@ -43,9 +36,9 @@
 
         <!-- Prosecution -->
         <div class="form-group">
-            <label for="fprosecution2">النيابة</label>
+            <label for="fprosecution2"><?php echo __('prosecution'); ?></label>
             <select id="fprosecution2" name="fprosecution2" class="form-input">
-                 <option value="">-- اختر نيابة --</option>
+                 <option value="">-- <?php echo __('select_prosecution'); ?> --</option>
                 <?php foreach($data['prosecutions'] as $prosecution): ?>
                     <option value="<?php echo safe_output($prosecution['prosecution_name']); ?>" <?php if($fileDetails['file_prosecution'] === $prosecution['prosecution_name']) echo 'selected'; ?>>
                         <?php echo safe_output($prosecution['prosecution_name']); ?>
@@ -56,9 +49,9 @@
 
         <!-- Court -->
         <div class="form-group">
-            <label for="fcourt_edit">المحكمة</label>
+            <label for="fcourt_edit"><?php echo __('court'); ?></label>
             <select id="fcourt_edit" name="fcourt_edit" class="form-input">
-                 <option value="">-- اختر محكمة --</option>
+                 <option value="">-- <?php echo __('select_court'); ?> --</option>
                 <?php foreach($data['courts'] as $court): ?>
                     <option value="<?php echo safe_output($court['court_name']); ?>" <?php if($fileDetails['file_court'] === $court['court_name']) echo 'selected'; ?>>
                         <?php echo safe_output($court['court_name']); ?>

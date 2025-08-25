@@ -57,3 +57,189 @@ no_attachments_found: لا توجد مرفقات.
 confirm_delete_selected_accounts: هل أنت متأكد من حذف الحسابات المحددة؟
 balance: الرصيد
 delete_selected: حذف المحدد
+law_firm_name: محمد بني هاشم للمحاماة و الاستشارات القانونية
+important_cases: الدعاوي الهامة
+files_and_cases: الملفات و القضايا
+select_category: اختر التصنيف
+all_files: جميع الملفات
+pending_files: ملفات فى الانتظار
+active_files: ملفات متداولة
+archived_files: ملفات مؤرشفة
+files_without_sessions: ملفات بدون جلسات
+opposing_cases: قضايا متقابلة
+secret_files: ملفات سرية
+search: البحث
+status: حالة
+file_number: رقم الملف
+subject: الموضوع
+case_number: رقم القضية
+court: المحكمة
+last_session_date: ت. أخر جلسة
+number_of_sessions: عدد الجلسات
+add_note: اضافة مذكرة
+administrative_tasks: أعمال إدارية
+work_duration: مدة العمل
+click_to_edit: اضغط هنا للتعديل
+write_note: كتابة مذكرة
+clients: العملاء
+all: الجميع
+opponents: الخصوم
+important_addresses: عناوين هامة
+add_new: إضافة جديد
+code: الكود
+name: الإسم
+category: الفئة
+classification: التصنيف
+contact_info: بيانات الاتصال
+no_clients_found: لا يوجد عملاء.
+contracts_and_licenses: العقود والرخص
+add_contract: إضافة عقد
+owner: المالك
+type: النوع
+time_period: الفترة الزمنية
+branch: الفرع
+place: المكان
+no_contracts_to_display: لا توجد عقود لعرضها.
+from: من
+to: إلى
+confirm_delete_contract: هل أنت متأكد من رغبتك في حذف هذا العقد؟
+edit_contract_details: تعديل بيانات العقد
+new_contract: عقد جديد
+lease_contract: عقد إيجار
+trade_license: رخصة تجارية
+starts_from: يبدأ من
+ends_on: ينتهي في
+sharjah: الشارقة
+dubai: دبي
+ajman: عجمان
+address_notes: العنوان/ملاحظات
+current_file: الملف الحالي
+contract_attachments_for_id: "مرفقات العقد رقم:"
+contract_license_image: صورة العقد / الرخصة
+attachment: مرفق
+no_attachments_to_display: لا توجد مرفقات لعرضها.
+accounts: الحسابات
+employee_petty_cash: نثريات الموظفين
+available_balance: الرصيد المتوفر
+pending_balance: رصيد فى الانتظار
+rejected_balance: الرصيد المرفوض
+disbursed_balance: الرصيد المصروف
+disbursement_date: تاريخ الصرف
+disbursement_amount: مبلغ الصرف
+clear_fields: افراغ الحقول
+no_add_permissions: ليس لديك صلاحيات اضافة
+id: م
+client_data: بيانات الموكل
+entry_by_date: م.ت/ الإدخال
+law_firm_name_footer: محمد بني هاشم للمحاماة والاستشارات القانونية
+no_permission_to_edit: "وصول مرفوض: ليس لديك صلاحية تعديل الملفات."
+invalid_file_id: "معرف ملف غير صالح."
+file_not_found: "الملف غير موجود."
+restricted_access_secret_file: "الوصول إلى هذا الملف السري مقيد."
+edit_file_number: "تعديل ملف رقم"
+save_data: "حفظ البيانات"
+file_data: "بيانات الملف"
+case_stages: "مراحل الدعوى"
+related_files: "الملفات المرتبطة"
+register_as_important: "تسجيل كدعوى مهمة"
+file_classification: "تصنيف الملف"
+responsible_branch: "الفرع المختص"
+file_status: "حالة الملف"
+pending: "في الانتظار"
+active: "متداول"
+archived: "مؤرشف"
+parties_data: "بيانات الأطراف"
+select_client: "اختر موكل"
+client_status: "صفة الموكل"
+select_status: "اختر صفة"
+select_opponent: "اختر خصم"
+opponent_status: "صفة الخصم"
+courts_and_police_stations: "المحاكم ومراكز الشرطة"
+case_type: "نوع القضية"
+select_type: "اختر نوع"
+police_station: "مركز الشرطة"
+select_station: "اختر مركز"
+prosecution: "النيابة"
+select_prosecution: "اختر نيابة"
+select_court: "اختر محكمة"
+file_responsible: "مسؤول الملف"
+secretary: "السكرتيرة"
+select: "اختر"
+legal_researcher: "الباحث القانوني"
+legal_advisor: "المستشار القانوني"
+lawyer: "المحامي"
+litigation_degrees: "درجات التقاضي"
+degree: "الدرجة"
+year: "السنة"
+entry_date: "تاريخ الإدخال"
+no_litigation_degrees_recorded: "لا توجد درجات تقاضي مسجلة."
+sessions: "الجلسات"
+session_date: "تاريخ الجلسة"
+litigation_degree: "درجة التقاضي"
+decision_details: "القرار/التفاصيل"
+link: "الرابط"
+attachment_status: "حالة الإرفاق"
+select_degree: "اختر درجة"
+no_sessions_recorded: "لا توجد جلسات مسجلة."
+attached: "تم الإرفاق"
+not_attached: "لم يرفق"
+tasks: "المهام"
+due_date: "تاريخ التنفيذ"
+task: "المهمة"
+details: "التفاصيل"
+priority: "الأهمية"
+assigned_employee: "الموظف المكلف"
+select_task: "اختر مهمة"
+normal: "عادي"
+urgent: "عاجل"
+select_employee: "اختر موظف"
+no_tasks_recorded: "لا توجد مهام مسجلة."
+add_new_attachments: "إضافة مرفقات جديدة"
+file_name: "اسم الملف"
+type_size: "النوع / الحجم"
+attachment_date: "تاريخ الإرفاق"
+attached_by: "المرفق بواسطة"
+law_offices: "مكاتب المحامين"
+add_new_office: "إضافة مكتب جديد"
+lawyer_name: "اسم المحامي"
+mobile_landline: "هاتف متحرك / ثابت"
+summary: "نبذة مختصرة"
+no_law_offices_registered: "لا توجد مكاتب محامين مسجلة."
+confirm_delete_record: "هل أنت متأكد من رغبتك في حذف هذا السجل؟"
+change_color: "تغيير اللون"
+username: "اسم المستخدم"
+password: "كلمة المرور"
+login: "دخول"
+user_data: "بيانات المستخدم"
+more_info: "المزيد من المعلومات"
+main_menu: "القائمة الرئيسية"
+clients_opponents: "الموكلين / الخصوم"
+client_requests: "طلبات الموكلين"
+client_login_page: "صفحة دخول الموكلين"
+add_file: "اضافة ملف"
+file_inquiry: "استعلام الملفات"
+session_roll: "رول الجلسات"
+issued_judgments: "الاحكام الصادرة"
+file_type_conversion: "تحويل نوع الملف"
+client_management: "ادارة الموكلين"
+phone_call_log: "سجل المكالمات الهاتفية"
+appointments_and_meetings: "المواعيد و الاجتماعات"
+potential_clients: "العملاء المحتملين"
+goaml_local_terror_list: "كشف قائمة الارهاب المحلية goAML"
+terror_list: "قائمة الارهاب"
+add_tasks: "اضافة مهام"
+assigned_tasks: "مهام موكلة"
+sub_clauses: "البنود الفرعية"
+cases_fees: "اتعاب القضايا"
+human_resources: "الموارد البشرية"
+employee_management: "ادارة الموظفين"
+attendance_log: "سجل الحضور"
+employee_data: "بيانات الموظفين"
+vacation_requests: "طلبات الاجازات"
+final_vacation_approval: "القبول النهائي للاجازات"
+alerts: "التنبيهات"
+appointments: "المواعيد"
+resources_and_vehicles: "الموارد و المركبات"
+lease_and_commercial_licenses: "عقود الايجار و الرخص التجارية"
+program_logs: "سجلات البرنامج"
+logout: "تسجيل الخروج"
