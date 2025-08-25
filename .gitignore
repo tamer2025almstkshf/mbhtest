@@ -3,10 +3,6 @@
 
 # Environment files
 .env
+.env.*
+!.env.example
 
-# Local development files
-.DS_Store
-/composer.phar
-
-# Testing configuration
-phpunit.xml
