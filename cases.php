@@ -128,9 +128,9 @@
                                 <input type="hidden" name="page" value="cases.php">
                                 <div class="table-header-right">
                                     <h3 style="display: inline-block"><font id="clients-translate"><?php if(isset($_GET['important']) && $_GET['important'] == 1){ echo 'الدعاوي الهامة'; } else{ echo 'الملفات و القضايا'; }?></font></h3>
-                                    <?php
-                                        $c1 = 'متداول';
-                                        $c2 = 'في الانتظار';
+                                    <?php 
+ $c1 = 'متداول'; 
+$c2 = 'في الانتظار';
                                         $c3 = 'مؤرشف';
                                         $empty = '';
                                         
@@ -234,14 +234,14 @@
                                         }
                                     ?>
                                     <select class="table-header-selector" name="type" onchange="submit()" style="padding: 0 5px;">
-                                        <option value="select">اختر التصنيف</option>
-                                        <option value="6" <?php if(isset($_GET['section']) && $_GET['section'] == 6){ echo 'selected'; }?>><font id="all-translate">جميع الملفات <?php echo '( '.safe_output($count6).' )';?></font></option>
-                                        <option value="2" <?php if(isset($_GET['section']) && $_GET['section'] == 2){ echo 'selected'; }?>><font id="clients-translate">ملفات فى الانتظار <?php echo '( '.safe_output($count2).' )';?></font></option>
-                                        <option value="1" <?php if(isset($_GET['section']) && $_GET['section'] == 1){ echo 'selected'; }?>><font id="opponents-translate">ملفات متداولة <?php echo '( '.safe_output($count1).' )';?></font></option>
-                                        <option value="3" <?php if(isset($_GET['section']) && $_GET['section'] == 3){ echo 'selected'; }?>><font id="subs-translate">ملفات مؤرشفة <?php echo '( '.safe_output($count3).' )';?></font></option>
-                                        <option value="5" <?php if(isset($_GET['section']) && $_GET['section'] == 5){ echo 'selected'; }?>><font id="subs-translate">ملفات بدون جلسات <?php echo '( '.safe_output($count5).' )';?></font></option>
-                                        <option value="4" <?php if(isset($_GET['section']) && $_GET['section'] == 4){ echo 'selected'; }?>><font id="subs-translate">قضايا متقابلة <?php echo '( '.safe_output($count4).' )';?></font></option>
-                                        <option value="7" <?php if(isset($_GET['section']) && $_GET['section'] == 7){ echo 'selected'; }?>><font id="subs-translate">ملفات سرية <?php echo '( '.safe_output($count7).' )';?></font></option>
+                                        <option value="select">Select Category</option>
+                                        <option value="6" <?php if(isset($_GET['section']) && $_GET['section'] == 6){ echo 'selected'; }?>><font id="all-translate">All Files <?php echo '( '.safe_output($count6).' )';?></font></option>
+                                        <option value="2" <?php if(isset($_GET['section']) && $_GET['section'] == 2){ echo 'selected'; }?>><font id="clients-translate">Pending Files <?php echo '( '.safe_output($count2).' )';?></font></option>
+                                        <option value="1" <?php if(isset($_GET['section']) && $_GET['section'] == 1){ echo 'selected'; }?>><font id="opponents-translate">Circulating Files <?php echo '( '.safe_output($count1).' )';?></font></option>
+                                        <option value="3" <?php if(isset($_GET['section']) && $_GET['section'] == 3){ echo 'selected'; }?>><font id="subs-translate">Archived Files <?php echo '( '.safe_output($count3).' )';?></font></option>
+                                        <option value="5" <?php if(isset($_GET['section']) && $_GET['section'] == 5){ echo 'selected'; }?>><font id="subs-translate">Files without Sessions <?php echo '( '.safe_output($count5).' )';?></font></option>
+                                        <option value="4" <?php if(isset($_GET['section']) && $_GET['section'] == 4){ echo 'selected'; }?>><font id="subs-translate">Opposing Cases <?php echo '( '.safe_output($count4).' )';?></font></option>
+                                        <option value="7" <?php if(isset($_GET['section']) && $_GET['section'] == 7){ echo 'selected'; }?>><font id="subs-translate">Secret Files <?php echo '( '.safe_output($count7).' )';?></font></option>
                                     </select>
                                 </div>
                             </form>
@@ -261,17 +261,17 @@
                                         <tr class="infotable-search">
                                             <td colspan="19">
                                                 <div class="input-container">
-                                                    <p class="input-parag" style="display: inline-block">البحث : </p>
+                                                    <p class="input-parag" style="display: inline-block">Search : </p>
                                                     <input class="form-input" style="display: inline-block; width: 50%;" type="text" id="SearchBox">
                                                 </div>
                                             </td>
                                         </tr>
                                         
                                         <tr class="infotable-header" style="position: sticky; top: 0; z-index: 3;">
-                                            <th width="60px">حالة</th>
-                                            <th>رقم الملف</th>
-                                            <th>الموضوع</th>
-                                            <th>الموكل</th>
+                                            <th width="60px">Status</th>
+                                            <th>File Number</th>
+                                            <th>Subject</th>
+                                            <th>Client</th>
                                             <th>الخصم</th>
                                             <th>رقم القضية</th>
                                             <th>المحكمة</th>
