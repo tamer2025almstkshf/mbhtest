@@ -4,8 +4,10 @@
 
     
     $myid = $_SESSION['id'];
-    $query_permcheck = "SELECT * FROM user WHERE id='$myid'";
-    $result_permcheck = mysqli_query($conn, $query_permcheck);
+    $stmt = $conn->prepare("SELECT * FROM user WHERE id=?");
+    $stmt->bind_param("i", $myid);
+    $stmt->execute();
+    $result_permcheck = $stmt->get_result();
     $row_permcheck = mysqli_fetch_array($result_permcheck);
     
     if($row_permcheck['call_dperm'] === '1'){
@@ -20,8 +22,10 @@
                 $flag = '0';
                 $action = "تم حذف مكالمة :<br>";
                 
-                $queryr = "SELECT * FROM clientsCalls WHERE id='$id'";
-                $resultr = mysqli_query($conn, $queryr);
+                $stmt = $conn->prepare("SELECT * FROM clientsCalls WHERE id=?");
+                $stmt->bind_param("i", $id);
+                $stmt->execute();
+                $resultr = $stmt->get_result();
                 $rowr = mysqli_fetch_array($resultr);
                 
                 $oldcaller_name = $rowr['caller_name'];
@@ -57,8 +61,10 @@
                 if(isset($oldmoved_to) && $oldmoved_to !== ''){
                     $flag = '1';
                     
-                    $queryu1 = "SELECT * FROM user WHERE id='$oldmoved_to'";
-                    $resultu1 = mysqli_query($conn, $queryu1);
+                    $stmt = $conn->prepare("SELECT * FROM user WHERE id=?");
+                    $stmt->bind_param("i", $oldmoved_to);
+                    $stmt->execute();
+                    $resultu1 = $stmt->get_result();
                     $rowu1 = mysqli_fetch_array($resultu1);
                     $cname = $rowu1['name'];
                     
@@ -67,20 +73,26 @@
                 
                 $empid = $_SESSION['id'];
                 
-                $queryu = "SELECT * FROM user WHERE id='$empid'";
-                $resultu = mysqli_query($conn, $queryu);
+                $stmt = $conn->prepare("SELECT * FROM user WHERE id=?");
+                $stmt->bind_param("i", $empid);
+                $stmt->execute();
+                $resultu = $stmt->get_result();
                 $rowu = mysqli_fetch_array($resultu);
                 $emp_name = $rowu['name'];
-                
+
                 if($flag === '1'){
-                    $querylog = "INSERT INTO logs (empid, emp_name, action) VALUES ('$empid', '$emp_name', '$action')";
-                    $resultlog = mysqli_query($conn, $querylog);
+                    $stmt = $conn->prepare("INSERT INTO logs (empid, emp_name, action) VALUES (?,?,?)");
+                    $stmt->bind_param("iss", $empid, $emp_name, $action);
+                    $stmt->execute();
                 }
             }
-            
-            $query_del = "DELETE FROM clientsCalls WHERE id IN ($ids)";
-        
-            if (mysqli_query($conn, $query_del)) {
+
+            $placeholders = implode(',', array_fill(0, count($CheckedD), '?'));
+            $stmt = $conn->prepare("DELETE FROM clientsCalls WHERE id IN ($placeholders)");
+            $types = str_repeat('i', count($CheckedD));
+            $stmt->bind_param($types, ...$CheckedD);
+
+            if ($stmt->execute()) {
                 header("Location: clientsCalls.php");
                 exit();
             } else {

@@ -3,19 +3,28 @@
     include_once 'login_check.php';
     
     $id = $_SESSION['id'];
-    $querymain = "SELECT * FROM user WHERE id='$id'";
-    $resultmain = mysqli_query($conn, $querymain);
+    $stmt = $conn->prepare("SELECT * FROM user WHERE id=?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $resultmain = $stmt->get_result();
     $rowmain = mysqli_fetch_array($resultmain);
-    
+
     $myid = $_SESSION['id'];
-    $query_permcheck = "SELECT * FROM user WHERE id='$myid'";
-    $result_permcheck = mysqli_query($conn, $query_permcheck);
+    $stmt = $conn->prepare("SELECT * FROM user WHERE id=?");
+    $stmt->bind_param("i", $myid);
+    $stmt->execute();
+    $result_permcheck = $stmt->get_result();
     $row_permcheck = mysqli_fetch_array($result_permcheck);
     
     if($row_permcheck['csched_eperm'] === '1'){
-        $id = $_GET['id'];
+        $id = (int)$_GET['id'];
         if(isset($_GET['id']) && $_GET['id'] !== '' && isset($_GET['del']) && $_GET['del'] !== ''){
             $del = $_GET['del'];
+            $allowedCols = ['meeting'];
+            if(!in_array($del, $allowedCols)){
+                header("Location: clients_schedule.php");
+                exit();
+            }
             
             if($del === 'meeting'){
                 $delar = "مرفق محضر الاجتماع";
@@ -23,18 +32,21 @@
             
             $action = "تم حذف $delar من الموكل رقم : $id";
             
-            $query = "UPDATE clients_schedule SET $del='' WHERE id='$id'";
-            $result = mysqli_query($conn, $query);
+            $stmt = $conn->prepare("UPDATE clients_schedule SET $del='' WHERE id=?");
+            $stmt->bind_param("i", $id);
+            $stmt->execute();
             
             $empid = $_SESSION['id'];
             
-            $queryu = "SELECT * FROM user WHERE id='$empid'";
-            $resultu = mysqli_query($conn, $queryu);
+            $stmt = $conn->prepare("SELECT * FROM user WHERE id=?");
+            $stmt->bind_param("i", $empid);
+            $stmt->execute();
+            $resultu = $stmt->get_result();
             $rowu = mysqli_fetch_array($resultu);
             $emp_name = $rowu['name'];
-            
-            $querylog = "INSERT INTO logs (empid, emp_name, action) VALUES ('$empid', '$emp_name', '$action')";
-            $resultlog = mysqli_query($conn, $querylog);
+            $stmt = $conn->prepare("INSERT INTO logs (empid, emp_name, action) VALUES (?,?,?)");
+            $stmt->bind_param("iss", $empid, $emp_name, $action);
+            $stmt->execute();
         }
         header("Location: clients_schedule.php?attachments=1&id=$id");
         exit();
