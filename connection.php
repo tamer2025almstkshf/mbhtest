@@ -29,8 +29,3 @@ if ($conn->connect_error) {
 
 // Ensure the connection uses the UTF-8 character set for proper Arabic language support.
 $conn->set_charset("utf8mb4");
-
-// Apply standard security headers to mitigate common web vulnerabilities.
-header("X-XSS-Protection: 1; mode=block");
-header("X-Content-Type-Options: nosniff");
-header("X-Frame-Options: SAMEORIGIN");
