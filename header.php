@@ -1,3 +1,18 @@
+<?php
+use App\I18n;
+
+// Set the HTML `lang` and `dir` attributes based on the current locale
+$currentLocale = I18n::getLocale();
+$htmlLang = $currentLocale;
+$htmlDir = ($currentLocale === 'ar') ? 'rtl' : 'ltr';
+
+// Conditionally load the appropriate stylesheet
+if ($currentLocale === 'ar') {
+    echo '<link rel="stylesheet" href="css/rtl.css">';
+} else {
+    echo '<link rel="stylesheet" href="css/ltr.css">';
+}
+?>
 <div class="header">
     <p class="display-none"></p>
     <p class="display-none"></p>
@@ -11,12 +26,12 @@
             </div>
             <div class="hsearch-radios">
                 <div class="h-radios">
-                    <input type="radio" name="Ckind" value="1" <?php if(isset($_GET['kind']) && $_GET['kind'] === '1'){ echo 'checked'; }?>> <font id="clientradio-translate" style="color: #fff;"> موكل</font>
-                    <input type="radio" name="Ckind" value="2" <?php if(isset($_GET['kind']) && $_GET['kind'] === '2'){ echo 'checked'; }?>> <font id="opponentradio-translate" style="color: #fff;"> خصم</font>
-                    <input type="radio" name="Ckind" value="3" <?php if(isset($_GET['kind']) && $_GET['kind'] === '3'){ echo 'checked'; }?>> <font id="attachmentradio-translate" style="color: #fff;"> مرفقات</font>
+                    <input type="radio" name="Ckind" value="1" <?php if(isset($_GET['kind']) && $_GET['kind'] === '1'){ echo 'checked'; }?>> <font style="color: #fff;"><?php echo __('client'); ?></font>
+                    <input type="radio" name="Ckind" value="2" <?php if(isset($_GET['kind']) && $_GET['kind'] === '2'){ echo 'checked'; }?>> <font style="color: #fff;"><?php echo __('opponent'); ?></font>
+                    <input type="radio" name="Ckind" value="3" <?php if(isset($_GET['kind']) && $_GET['kind'] === '3'){ echo 'checked'; }?>> <font style="color: #fff;"><?php echo __('attachments'); ?></font>
                 </div>
                 <div class="h-advanced-div">
-                    <button type="button" class="h-AdvancedSearch-Btn green-button" id="advancedsearch-translate" onclick="window.open('AdvancedSearch.php', '_blank');">البحث المتقدم</button>
+                    <button type="button" class="h-AdvancedSearch-Btn green-button" onclick="window.open('AdvancedSearch.php', '_blank');"><?php echo __('advanced_search'); ?></button>
                 </div>
             </div> 
         </form>
@@ -25,6 +40,14 @@
     </div>
     <p></p>
     <div class="h-container">
+        <div class="language-switcher">
+            <form action="change_language.php" method="post" id="language-form">
+                <select name="lang" onchange="this.form.submit()">
+                    <option value="en" <?php if ($currentLocale === 'en') echo 'selected'; ?>>English</option>
+                    <option value="ar" <?php if ($currentLocale === 'ar') echo 'selected'; ?>>العربية</option>
+                </select>
+            </form>
+        </div>
         <i class='bx bxs-home bx-sm' style="cursor: pointer;" onclick="window.open('index.php', '_blank');"></i>
         <i class='bx bx-log-out bx-sm' style="cursor: pointer;" onclick="logoutsubmit();"></i>
         <div class="profile-image" style="<?php if(isset($rowmain['personal_image']) && $rowmain['personal_image'] !== ''){ $personal_image = safe_output($rowmain['personal_image']); echo "background-image: url($personal_image);"; }?>display: inline-block; width:25px; height:25px"></div>
@@ -44,10 +67,10 @@
     function logoutsubmit(){
         Swal.fire({
             icon: 'warning',
-            title: 'هل ترغب في تسجيل الخروج؟',
+            title: '<?php echo __('logout_confirmation'); ?>',
             showCancelButton: true,
-            confirmButtonText: 'نعم',
-            cancelButtonText: 'إلغاء',
+            confirmButtonText: '<?php echo __('yes'); ?>',
+            cancelButtonText: '<?php echo __('cancel'); ?>',
             confirmButtonColor: '#007bff',
             cancelButtonColor: '#d33',
             background: '#fff',

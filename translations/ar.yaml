@@ -1,0 +1,59 @@
+# translations/ar.yaml
+hello: مرحبا
+welcome: أهلاً بك في تطبيقنا!
+client: موكل
+opponent: خصم
+attachments: مرفقات
+advanced_search: البحث المتقدم
+logout_confirmation: هل أنت متأكد أنك تريد تسجيل الخروج؟
+yes: نعم
+cancel: إلغاء
+dashboard: لوحة التحكم
+welcome_back: أهلاً بعودتك!
+dashboard_message: هذه هي لوحة التحكم الخاصة بك.
+finance_department: قسم المالية
+access_denied: وصول مرفوض
+no_permission_to_view: ليس لديك الصلاحية اللازمة لعرض هذه الصفحة.
+home: الرئيسية
+finance: المالية
+finance_intro_text: اختر أحد الأقسام أدناه لإدارة الجوانب المالية للمكتب.
+expenses: المصروفات
+manage_office_expenses: إدارة وتتبع مصروفات المكتب.
+go_to_expenses: الانتقال إلى المصروفات
+revenues: الإيرادات
+track_received_revenues: تسجيل ومتابعة الإيرادات المستلمة.
+go_to_revenues: الانتقال إلى الإيرادات
+invoices: الفواتير
+manage_client_invoices: إنشاء وإدارة فواتير العملاء.
+go_to_invoices: الانتقال إلى الفواتير
+bank_accounts: حسابات البنوك
+manage_office_bank_accounts: إدارة حسابات البنوك الخاصة بالمكتب.
+go_to_accounts: الانتقال إلى الحسابات
+agreements: الاتفاقيات
+add_new_agreement: إضافة اتفاقية جديدة
+edit_agreement_data: تعديل بيانات الاتفاقية
+new_agreement: اتفاقية جديدة
+client_name: اسم الموكل
+phone: الهاتف
+save: حفظ
+attendees: الحضور
+signing_date: تاريخ التوقيع
+entered_by: المُدخل
+actions: الإجراءات
+edit: تعديل
+delete: حذف
+delete_agreement_confirmation: هل أنت متأكد من حذف هذه الاتفاقية؟
+access_denied_message: وصول مرفوض ليس لديك الصلاحية اللازمة لعرض هذه الصفحة.
+add_new_account: إضافة حساب جديد
+edit_bank_account: تعديل حساب بنك
+add_new_bank_account: إضافة حساب بنك جديد
+bank_name: اسم البنك
+account_number: رقم الحساب
+notes: ملاحظات
+account_attachments: مرفقات الحساب
+receipt: الايصال
+confirm_delete: هل أنت متأكد؟
+no_attachments_found: لا توجد مرفقات.
+confirm_delete_selected_accounts: هل أنت متأكد من حذف الحسابات المحددة؟
+balance: الرصيد
+delete_selected: حذف المحدد

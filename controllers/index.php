@@ -9,12 +9,12 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Check if the user is logged in.
 if (isset($_SESSION['id'])) {
-    $pageTitle = 'Dashboard';
+    $pageTitle = __('dashboard');
     
     // For now, we will just show a simple welcome message.
     // This can be expanded into a full dashboard later.
     include_once 'layout/header.php';
-    echo '<div class="container mt-5"><h1>Welcome back!</h1><p>This is your dashboard.</p></div>';
+    echo '<div class="container mt-5"><h1>' . __('welcome_back') . '</h1><p>' . __('dashboard_message') . '</p></div>';
     include_once 'layout/footer.php';
 
 } else {

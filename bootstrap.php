@@ -8,6 +8,12 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+// Include Composer's autoloader
+require_once __DIR__ . '/vendor/autoload.php';
+
+// Include the new helpers file
+require_once __DIR__ . '/src/helpers.php';
+
 // Include the one and only database connection
 // This also loads Composer's autoloader and the .env file
 include_once 'connection.php';

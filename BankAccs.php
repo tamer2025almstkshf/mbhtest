@@ -1,48 +1,67 @@
 <?php
-    include_once 'connection.php';
-    include_once 'login_check.php';
-    include_once 'permissions_check.php';
+// FILE: BankAccs.php
 
-    // --- 1. Permission Check ---
-    if (empty($perm_row['accbankaccs_rperm'])) {
-        die("Access Denied: You do not have permission to view this page.");
-    }
-    
-    // --- 2. Secure Data Retrieval for Edit/Attachments Modals ---
-    $edit_mode = false;
-    $edit_data = null;
-    $attachment_mode = false;
-    $attachment_data = null;
-    
-    $edit_id = filter_input(INPUT_GET, 'edit', FILTER_VALIDATE_INT);
-    $attach_id = filter_input(INPUT_GET, 'attachments', FILTER_VALIDATE_INT);
+/**
+ * This page handles the listing, adding, and editing of bank accounts.
+ */
 
-    if ($edit_id && !empty($perm_row['accbankaccs_eperm'])) {
-        $edit_mode = true;
-        $stmt_edit = $conn->prepare("SELECT * FROM bank_accounts WHERE id = ?");
-        $stmt_edit->bind_param("i", $edit_id);
-        $stmt_edit->execute();
-        $edit_data = $stmt_edit->get_result()->fetch_assoc();
-        $stmt_edit->close();
-        if (!$edit_data) { // IDOR Check
-            header("Location: BankAccs.php?error=not_found");
-            exit();
-        }
-    }
+// 1. INCLUDES & BOOTSTRAPPING
+// =============================================================================
+require_once __DIR__ . '/bootstrap.php';
+include_once 'permissions_check.php'; // Still needed for now
 
-    if ($attach_id) {
-        $attachment_mode = true;
-        $stmt_attach = $conn->prepare("SELECT id, receipt_photo FROM bank_accounts WHERE id = ?");
-        $stmt_attach->bind_param("i", $attach_id);
-        $stmt_attach->execute();
-        $attachment_data = $stmt_attach->get_result()->fetch_assoc();
-        $stmt_attach->close();
+// 2. PERMISSIONS CHECK
+// =============================================================================
+$can_view_accounts = ($row_permcheck['accbankaccs_rperm'] === '1');
+$can_add_accounts = ($row_permcheck['accbankaccs_aperm'] === '1');
+$can_edit_accounts = ($row_permcheck['accbankaccs_eperm'] === '1');
+$can_delete_accounts = ($row_permcheck['accbankaccs_dperm'] === '1');
+
+if (!$can_view_accounts) {
+    die(__('access_denied_message'));
+}
+
+// 3. SECURE DATA RETRIEVAL FOR MODALS
+// =============================================================================
+$edit_mode = false;
+$edit_data = null;
+$attachment_mode = false;
+$attachment_data = null;
+
+$edit_id = filter_input(INPUT_GET, 'edit', FILTER_VALIDATE_INT);
+$attach_id = filter_input(INPUT_GET, 'attachments', FILTER_VALIDATE_INT);
+
+if ($edit_id && $can_edit_accounts) {
+    $edit_mode = true;
+    $stmt_edit = $conn->prepare("SELECT * FROM bank_accounts WHERE id = ?");
+    $stmt_edit->bind_param("i", $edit_id);
+    $stmt_edit->execute();
+    $edit_data = $stmt_edit->get_result()->fetch_assoc();
+    $stmt_edit->close();
+    if (!$edit_data) { // IDOR Check
+        header("Location: BankAccs.php?error=not_found");
+        exit();
     }
+}
+
+if ($attach_id) {
+    $attachment_mode = true;
+    $stmt_attach = $conn->prepare("SELECT id, receipt_photo FROM bank_accounts WHERE id = ?");
+    $stmt_attach->bind_param("i", $attach_id);
+    $stmt_attach->execute();
+    $attachment_data = $stmt_attach->get_result()->fetch_assoc();
+    $stmt_attach->close();
+}
+
+// 4. RENDER PAGE
+// =============================================================================
+use App\I18n;
+$currentLocale = I18n::getLocale();
 ?>
 <!DOCTYPE html>
-<html dir="rtl">
+<html dir="<?php echo ($currentLocale === 'ar') ? 'rtl' : 'ltr'; ?>" lang="<?php echo $currentLocale; ?>">
 <head>
-    <title>حسابات البنوك</title>
+    <title><?php echo __('bank_accounts'); ?></title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <link href="css/styles.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -55,18 +74,18 @@
             <div class="web-page">
                 <div class="table-container">
                     <div class="table-header">
-                        <h3>حسابات البنوك</h3>
-                        <?php if (!empty($perm_row['accbankaccs_aperm'])): ?>
-                            <button onclick="location.href='BankAccs.php?add=1'">إضافة حساب جديد</button>
+                        <h3><?php echo __('bank_accounts'); ?></h3>
+                        <?php if ($can_add_accounts): ?>
+                            <button onclick="location.href='BankAccs.php?add=1'"><?php echo __('add_new_account'); ?></button>
                         <?php endif; ?>
                     </div>
 
                     <!-- Modal for Add/Edit Form -->
-                    <?php if ((isset($_GET['add']) && !empty($perm_row['accbankaccs_aperm'])) || ($edit_mode && $edit_data)): ?>
+                    <?php if ((isset($_GET['add']) && $can_add_accounts) || ($edit_mode && $edit_data)): ?>
                     <div class="modal-overlay" style="display: block;">
                         <div class="modal-content">
                             <div class="addc-header">
-                                <h4><?php echo $edit_mode ? "تعديل حساب بنك" : "إضافة حساب بنك جديد"; ?></h4>
+                                <h4><?php echo $edit_mode ? __('edit_bank_account') : __('add_new_bank_account'); ?></h4>
                                 <a href="BankAccs.php" class="close-button">&times;</a>
                             </div>
                             <form action="<?php echo $edit_mode ? 'editbankacc.php' : 'bankacc.php'; ?>" method="post" enctype="multipart/form-data">
@@ -74,17 +93,16 @@
                                     <input type="hidden" name="id" value="<?php echo htmlspecialchars($edit_data['id'], ENT_QUOTES, 'UTF-8'); ?>">
                                 <?php endif; ?>
                                 <div class="addc-body">
-                                    <p>اسم البنك <font color="red">*</font></p>
+                                    <p><?php echo __('bank_name'); ?> <font color="red">*</font></p>
                                     <input class="form-input" name="name" value="<?php echo htmlspecialchars($edit_data['name'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" type="text" required>
-                                    <p>رقم الحساب <font color="red">*</font></p>
+                                    <p><?php echo __('account_number'); ?> <font color="red">*</font></p>
                                     <input class="form-input" name="account_no" value="<?php echo htmlspecialchars($edit_data['account_no'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" type="text" required>
-                                    <!-- Add other fields securely -->
-                                    <p>ملاحظات</p>
+                                    <p><?php echo __('notes'); ?></p>
                                     <textarea class="form-input" name="notes" rows="2"><?php echo htmlspecialchars($edit_data['notes'] ?? '', ENT_QUOTES, 'UTF-8'); ?></textarea>
                                 </div>
                                 <div class="addc-footer">
-                                    <button type="submit" class="form-btn submit-btn">حفظ</button>
-                                    <a href="BankAccs.php" class="form-btn cancel-btn">الغاء</a>
+                                    <button type="submit" class="form-btn submit-btn"><?php echo __('save'); ?></button>
+                                    <a href="BankAccs.php" class="form-btn cancel-btn"><?php echo __('cancel'); ?></a>
                                 </div>
                             </form>
                         </div>
@@ -96,22 +114,22 @@
                     <div class="modal-overlay" style="display: block;">
                         <div class="modal-content">
                              <div class="addc-header">
-                                <h4 style="margin: auto">مرفقات الحساب</h4>
+                                <h4 style="margin: auto"><?php echo __('account_attachments'); ?></h4>
                                 <a href="BankAccs.php" class="close-button">&times;</a>
                             </div>
                             <div class="notes-body" style="padding: 10px; text-align: right;">
                                 <?php if (!empty($attachment_data['receipt_photo'])): ?>
                                     <div class="attachment-row">
-                                        <p>الايصال :</p>
+                                        <p><?php echo __('receipt'); ?>:</p>
                                         <a href="<?php echo htmlspecialchars($attachment_data['receipt_photo'], ENT_QUOTES, 'UTF-8'); ?>" target="_blank">
                                             <?php echo htmlspecialchars(basename($attachment_data['receipt_photo']), ENT_QUOTES, 'UTF-8'); ?>
                                         </a>
-                                        <?php if (!empty($perm_row['accbankaccs_dperm'])): ?>
-                                            <a href="baattachdel.php?id=<?php echo $attachment_data['id']; ?>&del=receipt_photo" onclick="return confirm('هل أنت متأكد؟');">[حذف]</a>
+                                        <?php if ($can_delete_accounts): ?>
+                                            <a href="baattachdel.php?id=<?php echo $attachment_data['id']; ?>&del=receipt_photo" onclick="return confirm('<?php echo __('confirm_delete'); ?>');">[<?php echo __('delete'); ?>]</a>
                                         <?php endif; ?>
                                     </div>
                                 <?php else: ?>
-                                    <p>لا توجد مرفقات.</p>
+                                    <p><?php echo __('no_attachments_found'); ?></p>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -120,20 +138,19 @@
 
                     <!-- Bank Accounts Table -->
                     <div class="table-body">
-                        <form action="delbankaccs.php" method="post" onsubmit="return confirm('هل أنت متأكد من حذف الحسابات المحددة؟');">
+                        <form action="delbankaccs.php" method="post" onsubmit="return confirm('<?php echo __('confirm_delete_selected_accounts'); ?>');">
                             <table class="info-table" style="width: 100%;">
                                 <thead>
                                     <tr class="infotable-header">
                                         <th><input type="checkbox" id="selectAll"></th>
-                                        <th>اسم البنك</th>
-                                        <th>رقم الحساب</th>
-                                        <th>الرصيد</th>
-                                        <th>الإجراءات</th>
+                                        <th><?php echo __('bank_name'); ?></th>
+                                        <th><?php echo __('account_number'); ?></th>
+                                        <th><?php echo __('balance'); ?></th>
+                                        <th><?php echo __('actions'); ?></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php
-                                        // This query is safe as it does not use user input.
                                         $result = $conn->query("SELECT * FROM bank_accounts ORDER BY id DESC");
                                         while ($row = $result->fetch_assoc()):
                                     ?>
@@ -143,17 +160,17 @@
                                         <td><?php echo htmlspecialchars($row['account_no'], ENT_QUOTES, 'UTF-8'); ?></td>
                                         <td><?php echo htmlspecialchars($row['account_amount'], ENT_QUOTES, 'UTF-8'); ?></td>
                                         <td>
-                                            <?php if (!empty($perm_row['accbankaccs_eperm'])): ?>
-                                                <a href="BankAccs.php?edit=<?php echo $row['id']; ?>">تعديل</a> |
+                                            <?php if ($can_edit_accounts): ?>
+                                                <a href="BankAccs.php?edit=<?php echo $row['id']; ?>"><?php echo __('edit'); ?></a> |
                                             <?php endif; ?>
-                                            <a href="BankAccs.php?attachments=<?php echo $row['id']; ?>">المرفقات</a>
+                                            <a href="BankAccs.php?attachments=<?php echo $row['id']; ?>"><?php echo __('attachments'); ?></a>
                                         </td>
                                     </tr>
                                     <?php endwhile; ?>
                                 </tbody>
                             </table>
-                            <?php if (!empty($perm_row['accbankaccs_dperm'])): ?>
-                                <input type="submit" value="حذف المحدد" class="delete-selected">
+                            <?php if ($can_delete_accounts): ?>
+                                <input type="submit" value="<?php echo __('delete_selected'); ?>" class="delete-selected">
                             <?php endif; ?>
                         </form>
                     </div>

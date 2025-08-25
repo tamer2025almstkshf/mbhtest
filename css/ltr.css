@@ -1,0 +1,7 @@
+/* css/ltr.css */
+body {
+    direction: ltr;
+    text-align: left;
+}
+
+/* Add other LTR-specific styles here */
