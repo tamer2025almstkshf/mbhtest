@@ -1,7 +1,17 @@
 <?php
-header('Content-Type: application/json');
-include_once '../connection.php';
-include_once '../login_check.php';
+// Send a JSON response header only when headers have not been sent yet.
+// This avoids "headers already sent" warnings during CLI execution (e.g. PHPUnit tests).
+if (!headers_sent()) {
+    header('Content-Type: application/json');
+}
+
+// Allow tests to inject their own mocked connection by defining $conn beforehand.
+// Only include the real connection setup when no connection is present.
+if (!isset($conn)) {
+    include_once __DIR__ . '/../connection.php';
+}
+
+require __DIR__ . '/../login_check.php';
 
 $response = ['status' => 'error', 'message' => 'Invalid request.'];
 
