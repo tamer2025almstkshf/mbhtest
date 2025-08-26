@@ -19,7 +19,7 @@ class IntegrationTest extends TestCase
         // The Dotenv library will automatically load .env if it exists,
         // and environment variables set in phpunit.xml will override it.
         $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
-        $dotenv->load();
+        $dotenv->safeLoad();
     }
 
     public function testDatabaseConnection()

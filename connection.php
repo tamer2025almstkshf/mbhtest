@@ -5,7 +5,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 // Load environment variables from the .env file.
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-$dotenv->load();
+$dotenv->safeLoad();
 
 // Set the default timezone for the application.
 date_default_timezone_set('Asia/Dubai');
