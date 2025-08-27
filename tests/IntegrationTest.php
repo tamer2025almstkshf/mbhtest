@@ -7,11 +7,13 @@ use GuzzleHttp\Exception\ConnectException;
 class IntegrationTest extends TestCase
 {
     protected static $httpClient;
-    protected static $baseUrl = 'http://localhost:8080'; // Updated to match docker-compose.yml
+    protected static $baseUrl = 'http://localhost:8080'; // matches containerized environment on port 8080
     protected static $skip = false;
 
     public static function setUpBeforeClass(): void
     {
+        self::$baseUrl = getenv('BASE_URL') ?: self::$baseUrl;
+
         self::$httpClient = new Client([
             'base_uri' => self::$baseUrl,
             'http_errors' => false, // We want to handle HTTP errors manually in tests
