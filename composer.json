@@ -10,7 +10,9 @@
         "vlucas/phpdotenv": "^5.4",
         "guzzlehttp/guzzle": "^7.0",
         "symfony/translation": "^7.3",
-        "symfony/yaml": "^7.3"
+        "symfony/yaml": "^7.3",
+        "ext-curl": "*",
+        "ext-mysqli": "*"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5"

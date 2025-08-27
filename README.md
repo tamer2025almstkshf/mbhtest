@@ -10,6 +10,10 @@ To test the service locally, run:
 php -S localhost:3000 index.php
 ```
 
+## Configuration
+
+Copy `.env.example` to `.env` and provide values for the required environment variables. To enable email features, set `SENDINBLUE_API_KEY` with your Brevo (Sendinblue) API key.
+
 ## Testing
 
 Install Composer dependencies and run the PHPUnit test suite:
