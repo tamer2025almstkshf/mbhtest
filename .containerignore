@@ -1,0 +1,13 @@
+# The .containerignore file excludes files from the container build process.
+#
+# https://docs.docker.com/engine/reference/builder/#containerignore-file
+
+# Exclude locally vendored dependencies.
+vendor/
+
+# Exclude "build-time" ignore files.
+.containerignore
+.gcloudignore
+
+# Exclude git history and configuration.
+.gitignore
