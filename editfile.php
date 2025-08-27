@@ -6,26 +6,26 @@
     include_once 'golden_pass.php';
     include_once 'secure_filesfunc.php';
     
-    $fidd = $_REQUEST['fid'];
+    $fidd = $_REQUEST['fid'] ?? null;
     if (isset($_REQUEST['save_file'])) {
         $fid = (int)filter_input(INPUT_POST, 'fidget', FILTER_SANITIZE_NUMBER_INT);
-        
+
+        // Ensure tracking variables are always defined
+        $flag2 = '0';
+        $action2 = "تم التعديل على الملف :<br>رقم الملف : $fid<br>";
+
         if(isset($_REQUEST['fclass_edit']) && $_REQUEST['fclass_edit'] !== ''){
             if($row_permcheck['cfiles_eperm'] == 1){
-                $flag2 = '0';
-                $action2 = "تم التعديل على الملف :<br>رقم الملف : $fid<br>";
-                
-                $stmtr = $conn->prepare("SELECT * FROM file WHERE file_id = ?"); 
-                $stmtr->bind_param("i", $fid); 
-                $stmtr->execute(); 
-                $resultr = $stmtr->get_result(); 
+
+                $stmtr = $conn->prepare("SELECT * FROM file WHERE file_id = ?");
+                $stmtr->bind_param("i", $fid);
+                $stmtr->execute();
+                $resultr = $stmtr->get_result();
                 $rowr = $resultr->fetch_assoc();
                 $stmtr->close();
-                
+
                 $type_edit = filter_input(INPUT_POST, "type_edit", FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-                if(isset($rowr['file_type'])){
-                    $oldtype = isset($rowr['file_type']) ? safe_output($rowr['file_type']) : '';
-                }
+                $oldtype = isset($rowr['file_type']) ? safe_output($rowr['file_type']) : '';
                 if(isset($type_edit) && $type_edit !== $oldtype){
                     $flag2 = '1';
                     
