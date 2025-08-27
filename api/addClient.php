@@ -5,6 +5,9 @@ include_once '../login_check.php';
 include_once '../permissions_check.php';
 include_once '../AES256.php';
 
+/** @var mysqli $conn */
+/** @var array $row_permcheck */
+
 $response = ['status' => 'error', 'message' => 'An unknown error occurred.'];
 
 if ($row_permcheck['clients_aperm'] != 1) {
@@ -20,12 +23,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($arname) || empty($tel1)) {
         $response['message'] = 'Required fields are missing.';
     } else {
-        $password = bin2hex(random_bytes(8));
-        $encrypted_password = openssl_encrypt($password, $cipher, $key, $options, $iv);
+        $encryption_key = getenv('ENCRYPTION_KEY') ?: '';
+        if ($encryption_key === '') {
+            $response['message'] = 'Encryption key not configured.';
+            echo json_encode($response);
+            exit();
+        }
 
-        $sql = "INSERT INTO client (arname, engname, client_kind, client_type, country, tel1, tel2, email, fax, address, password, perm) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)";
-        
+        $aes = new AES256($encryption_key);
+        $password = bin2hex(random_bytes(8));
+        $encrypted_password = $aes->encrypt($password);
+        if ($encrypted_password === false) {
+            $response['message'] = 'Password encryption failed.';
+            echo json_encode($response);
+            exit();
+        }
+
+        $sql = "INSERT INTO client (arname, engname, client_kind, client_type, country, tel1, tel2, email, fax, address, password, perm)"
+            . " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param(
             "sssssssssss",
@@ -57,3 +72,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $conn->close();
 echo json_encode($response);
+

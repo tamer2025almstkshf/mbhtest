@@ -4,6 +4,9 @@ include_once '../connection.php';
 include_once '../login_check.php';
 include_once '../permissions_check.php';
 
+/** @var mysqli $conn */
+/** @var array $row_permcheck */
+
 $response = ['status' => 'error', 'message' => 'An unknown error occurred.'];
 
 if ($row_permcheck['clients_rperm'] != 1) {
@@ -38,3 +41,4 @@ if (isset($_GET['id'])) {
 
 $conn->close();
 echo json_encode($response);
+

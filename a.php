@@ -1,6 +1,9 @@
 <?php
     include_once 'connection.php';
     include_once 'login_check.php';
+
+    /** @var mysqli $conn */
+    $selectedDegree = $_POST['degree_id_sess'] ?? '';
 ?>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">

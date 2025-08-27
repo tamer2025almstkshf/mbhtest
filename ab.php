@@ -1,6 +1,8 @@
 <?php
     include_once 'connection.php';
     include_once 'login_check.php';
+
+    /** @var mysqli $conn */
     
     if(isset($_REQUEST['booked_todate']) && $_REQUEST['booked_todate'] !== ''){
         
@@ -89,8 +91,8 @@
         $newDateFormatted = $newDate->format('Y-m-d');
         
         $today = new DateTime();
-        $todatFormatted = $today->format('Y-m-d');
-        
+        $todayFormatted = $today->format('Y-m-d');
+
         $newTodayObject = new DateTime($todayFormatted);
         $newDateObject = new DateTime($newDateFormatted);
         $difference = $newTodayObject->diff($newDateObject);

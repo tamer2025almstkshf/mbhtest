@@ -4,6 +4,9 @@ include_once '../connection.php';
 include_once '../login_check.php';
 include_once '../permissions_check.php';
 
+/** @var mysqli $conn */
+/** @var array $row_permcheck */
+
 $response = ['status' => 'error', 'message' => 'An unknown error occurred.'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -51,3 +54,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 echo json_encode($response);
+

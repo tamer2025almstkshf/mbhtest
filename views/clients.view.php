@@ -2,6 +2,10 @@
 /**
  * View file for displaying the clients list.
  */
+
+/** @var array $clients */
+/** @var array $row_permcheck */
+/** @var string $type */
 ?>
 
 <div class="container-fluid mt-4">

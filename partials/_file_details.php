@@ -1,5 +1,10 @@
 <?php
 // FILE: partials/_file_details.php
+
+/** @var array $data */
+/** @var array $row_permcheck */
+/** @var array $fileDetails */
+/** @var int|string $fileId */
 ?>
 
 <section class="form-section">

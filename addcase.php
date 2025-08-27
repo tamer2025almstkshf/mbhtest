@@ -4,6 +4,11 @@
     include_once 'safe_output.php';
     include_once 'permissions_check.php';
     include_once 'AES256.php';
+
+    /** @var mysqli $conn */
+    /** @var array $row_permcheck */
+    /** @var array $row_details */
+    $row_details = $row_details ?? [];
 ?>
 <!DOCTYPE html>
 <html dir="rtl">

@@ -3,6 +3,10 @@
     include_once 'login_check.php';
     include_once 'permissions_check.php';
 
+    /** @var mysqli $conn */
+    /** @var array $row_permcheck */
+    /** @var int $admin */
+
     // Get and validate the file number from the URL.
     $fno = filter_input(INPUT_GET, 'fno', FILTER_VALIDATE_INT);
     if (!$fno) {
