@@ -5,7 +5,15 @@ include_once '../login_check.php';
 include_once '../permissions_check.php';
 include_once '../AES256.php';
 
-$encryption_key = getenv('ENCRYPTION_KEY') ?: 'default_key';
+/** @var mysqli $conn */
+/** @var array $row_permcheck */
+
+$encryption_key = getenv('ENCRYPTION_KEY') ?: '';
+if ($encryption_key === '') {
+    $response = ['status' => 'error', 'message' => 'Encryption key not configured.'];
+    echo json_encode($response);
+    exit();
+}
 $aes = new AES256($encryption_key);
 
 $response = ['status' => 'error', 'message' => 'An unknown error occurred.'];
@@ -57,3 +65,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $conn->close();
 echo json_encode($response);
+

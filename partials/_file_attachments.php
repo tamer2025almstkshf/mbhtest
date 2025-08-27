@@ -1,5 +1,9 @@
 <?php
 // FILE: partials/_file_attachments.php
+
+/** @var array $data */
+/** @var array $row_permcheck */
+/** @var int|string $fileId */
 ?>
 
 <section class="form-section">

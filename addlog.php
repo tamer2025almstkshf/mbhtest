@@ -3,6 +3,8 @@
         $action = '';
     }
     $empid = $_SESSION['id'];
+
+    /** @var mysqli $conn */
     
     $stmtemp = $conn->prepare("SELECT * FROM user WHERE id=?");
     $stmtemp->bind_param("i", $empid);

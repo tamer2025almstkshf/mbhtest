@@ -3,6 +3,8 @@ header('Content-Type: application/json');
 include_once '../connection.php';
 include_once '../login_check.php';
 
+/** @var mysqli $conn */
+
 $response = ['status' => 'error', 'message' => 'Invalid request.'];
 
 if (isset($_GET['id'])) {
@@ -26,3 +28,4 @@ if (isset($_GET['id'])) {
 }
 
 echo json_encode($response);
+

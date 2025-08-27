@@ -3,6 +3,8 @@
     include_once 'login_check.php';
     include_once 'src/I18n.php';
 
+    /** @var mysqli $conn */
+
     $i18n = new I18n();
     $i18n->loadTranslations('translations/Accounts.yaml');
     // Use a prepared statement to securely fetch user permission data.

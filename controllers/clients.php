@@ -12,6 +12,8 @@ require_once __DIR__ . '/../bootstrap.php';
 require_once __DIR__ . '/../permissions_check.php';
 require_once __DIR__ . '/../safe_output.php';
 
+/** @var array $row_permcheck */
+
 $pageTitle = __('clients');
 
 // 2. HEADER

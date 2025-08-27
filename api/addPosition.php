@@ -3,6 +3,8 @@ header('Content-Type: application/json');
 include_once '../connection.php';
 include_once '../login_check.php';
 
+/** @var mysqli $conn */
+
 $response = ['status' => 'error', 'message' => 'An unknown error occurred.'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['position_name'])) {
@@ -34,3 +36,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['position_name'])) {
 
 $conn->close();
 echo json_encode($response);
+

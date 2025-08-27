@@ -2,6 +2,10 @@
     include_once 'connection.php';
     include_once 'login_check.php';
     include_once 'permissions_check.php';
+
+    /** @var mysqli $conn */
+    /** @var array $row_permcheck */
+    /** @var int $admin */
     
     $fid = filter_input(INPUT_POST, 'fid', FILTER_SANITIZE_NUMBER_INT);
     

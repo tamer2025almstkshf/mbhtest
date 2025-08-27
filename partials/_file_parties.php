@@ -1,5 +1,8 @@
 <?php
 // FILE: partials/_file_parties.php
+
+/** @var array $data */
+/** @var array $fileDetails */
 ?>
 
 <section class="form-section">

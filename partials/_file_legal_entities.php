@@ -1,5 +1,8 @@
 <?php
 // FILE: partials/_file_legal_entities.php
+
+/** @var array $data */
+/** @var array $fileDetails */
 ?>
 
 <section class="form-section">

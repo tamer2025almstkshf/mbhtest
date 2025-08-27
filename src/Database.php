@@ -4,6 +4,24 @@ class Database {
     private static ?mysqli $connection = null;
 
     /**
+     * Infer mysqli parameter types from the given values.
+     *
+     * @param array $params
+     * @return string
+     */
+    private static function detectTypes(array $params): string {
+        return implode('', array_map(function ($param) {
+            return match (true) {
+                is_int($param)   => 'i',
+                is_float($param) => 'd',
+                is_null($param)  => 's', // treat null as string
+                is_string($param)=> 's',
+                default          => 'b',
+            };
+        }, $params));
+    }
+
+    /**
      * Establishes and returns a single, reusable database connection.
      * This follows the Singleton pattern to prevent multiple connections.
      */
@@ -40,6 +58,7 @@ class Database {
      * @param string $sql The SQL query with ? placeholders.
      * @param array $params An array of parameters to bind.
      * @param string $types A string representing the types of the params (e.g., "iss" for integer, string, string).
+     *                     If empty, types will be inferred.
      * @return array Returns an array of associative arrays.
      */
     public static function select(string $sql, array $params = [], string $types = ""): array {
@@ -52,7 +71,15 @@ class Database {
         }
 
         if (!empty($params)) {
-            $stmt->bind_param($types, ...$params);
+            if ($types === '') {
+                $types = self::detectTypes($params);
+            }
+
+            if (!$stmt->bind_param($types, ...$params)) {
+                error_log('Bind failed: ' . $stmt->error);
+                $stmt->close();
+                return [];
+            }
         }
 
         $stmt->execute();
@@ -68,6 +95,7 @@ class Database {
      * @param string $sql The SQL query with ? placeholders.
      * @param array $params An array of parameters to bind.
      * @param string $types A string representing the types of the params (e.g., "sdi").
+     *                     If empty, types will be inferred.
      * @return bool|int Returns the number of affected rows on success, or false on failure.
      */
     public static function execute(string $sql, array $params = [], string $types = ""): bool|int {
@@ -80,7 +108,15 @@ class Database {
         }
 
         if (!empty($params)) {
-            $stmt->bind_param($types, ...$params);
+            if ($types === '') {
+                $types = self::detectTypes($params);
+            }
+
+            if (!$stmt->bind_param($types, ...$params)) {
+                error_log('Bind failed: ' . $stmt->error);
+                $stmt->close();
+                return false;
+            }
         }
 
         $success = $stmt->execute();

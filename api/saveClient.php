@@ -4,7 +4,14 @@ include_once '../connection.php';
 include_once '../login_check.php';
 include_once '../AES256.php';
 
-$encryption_key = getenv('ENCRYPTION_KEY') ?: 'default_key';
+/** @var mysqli $conn */
+
+$encryption_key = getenv('ENCRYPTION_KEY') ?: '';
+if ($encryption_key === '') {
+    $response = ['status' => 'error', 'message' => 'Encryption key not configured.'];
+    echo json_encode($response);
+    exit();
+}
 $aes = new AES256($encryption_key);
 
 $response = ['status' => 'error', 'message' => 'Invalid request method.'];
@@ -58,3 +65,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 echo json_encode($response);
+

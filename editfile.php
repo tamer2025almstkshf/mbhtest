@@ -2618,7 +2618,7 @@
         }
         
         $fidd = $fid2;
-    } else if(isset($_REQUEST['edit_document'])){
+    } else if(filter_has_var(INPUT_POST, 'edit_document')){
         if($row_permcheck['note_eperm'] == 1){
             $cdoid = filter_input(INPUT_POST, 'cdoid', FILTER_SANITIZE_NUMBER_INT);
             
