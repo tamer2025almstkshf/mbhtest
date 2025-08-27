@@ -99,6 +99,8 @@
                                         
                                         <?php
                                             include_once 'AES256.php';
+                                            $encryption_key = getenv('ENCRYPTION_KEY') ?: 'default_key';
+                                            $aes = new AES256($encryption_key);
                                             $id = $_GET['id'];
                                             
                                             $query = "SELECT * FROM user WHERE id = '$id'";
@@ -136,7 +138,7 @@
                                                                             <?php
                                                                                 if(isset($row['password']) && $row['password'] !== ''){
                                                                                     $password = $row['password'];
-                                                                                    $decrypted_password = openssl_decrypt($password, $cipher, $key, $options, $iv);
+                                                                                    $decrypted_password = $aes->decrypt($password);
                                                                                 }
                                                                             ?>
                                                                             <input type="text" name="password" dir="rtl" value="<?php if(isset($row['password']) && $row['password'] !== ''){echo $decrypted_password;}?>" style="width:30%; text-align:center; color:#00F; font-weight:bold;"><br>
@@ -158,12 +160,12 @@
                                                                             <?php
                                                                                 if(isset($row['tel1']) && $row['tel1'] !== ''){
                                                                                     $tel1 = $row['tel1'];
-                                                                                    $decrypted_tel1 = openssl_decrypt($tel1, $cipher, $key, $options, $iv);
+                                                                                    $decrypted_tel1 = $aes->decrypt($tel1);
                                                                                 }
                                                                                 
                                                                                 if(isset($row['tel2']) && $row['tel2'] !== ''){
                                                                                     $tel2 = $row['tel2'];
-                                                                                    $decrypted_tel2 = openssl_decrypt($tel2, $cipher, $key, $options, $iv);
+                                                                                    $decrypted_tel2 = $aes->decrypt($tel2);
                                                                                 }
                                                                             ?>
                                                                             1 <input type="text" name="tel1" dir="rtl" value="<?php if(isset($row['tel1']) && $row['tel1'] !== ''){echo $decrypted_tel1;}?>" style="width:20%;"><br />
@@ -178,7 +180,7 @@
                                                                             <?php
                                                                             if(isset($row['email']) && $row['email'] !== ''){
                                                                                 $email = $row['email'];
-                                                                                $decrypted_email = openssl_decrypt($email, $cipher, $key, $options, $iv);
+                                                                                $decrypted_email = $aes->decrypt($email);
                                                                             }
                                                                             ?>
                                                                             <input type="text" name="email" dir="ltr" value="<?php if(isset($row['email']) && $row['email'] !== ''){echo $decrypted_email;}?>" style="width:50%;"><br>
@@ -466,7 +468,7 @@
                                                                             <?php
                                                                             if(isset($row['address']) && $row['address'] !== ''){
                                                                                 $address = $row['address'];
-                                                                                $decrypted_address = openssl_decrypt($address, $cipher, $key, $options, $iv);
+                                                                                $decrypted_address = $aes->decrypt($address);
                                                                             }
                                                                             ?>
                                                                             <textarea dir="rtl" wrap="physical" rows="2" style="width:98%" name="address"><?php if(isset($row['address']) && $row['address'] !== ''){echo $decrypted_address;}?></textarea>
@@ -479,7 +481,7 @@
                                                                             <?php
                                                                             if(isset($row['passport_no']) && $row['passport_no'] !== ''){
                                                                                 $passno = $row['passport_no'];
-                                                                                $decrypted_passno = openssl_decrypt($passno, $cipher, $key, $options, $iv);
+                                                                                $decrypted_passno = $aes->decrypt($passno);
                                                                             }
                                                                             ?>
                                                                             <input type="text" name="passport_no" dir="rtl" value="<?php if(isset($row['passport_no']) && $row['passport_no'] !== ''){echo $decrypted_passno;}?>" style="width:20%; text-align:center"> &nbsp;&nbsp;&nbsp; تاريخ الانتهاء : 
@@ -1431,12 +1433,15 @@
                                             <th ><?php if(isset($rowr['work_place']) && $rowr['work_place'] !== ''){ echo $rowr['work_place'];}?></th>
                                             <th ><?php if(isset($rowr['job_title']) && $rowr['job_title'] !== ''){ $psjt = $rowr['job_title']; $queryposti = "SELECT * FROM positions WHERE id='$psjt'"; $resultposti=mysqli_query($conn, $queryposti); if($resultposti->num_rows > 0){$rowposti=mysqli_fetch_array($resultposti); echo $rowposti['position_name'];}}?></th>
                                             <?php
-                                                include_once 'AES256.php';
+                                                if (!isset($aes)) {
+                                                    $encryption_key = getenv('ENCRYPTION_KEY') ?: 'default_key';
+                                                    $aes = new AES256($encryption_key);
+                                                }
                                                 $tel1 = $rowr['tel1'];
-                                                $decrypted_tel1 = openssl_decrypt($tel1, $cipher, $key, $options, $iv);
+                                                $decrypted_tel1 = $aes->decrypt($tel1);
 
                                                 $tel2 = $rowr['tel2'];
-                                                $decrypted_tel2 = openssl_decrypt($tel2, $cipher, $key, $options, $iv);
+                                                $decrypted_tel2 = $aes->decrypt($tel2);
                                             ?>
                                             <th ><?php if(isset($rowr['tel1']) && $rowr['tel1'] !== ''){ echo $decrypted_tel1;}?><br /></th>
                                             <th ><?php if(isset($rowr['name']) && $rowr['name'] !== ''){ echo $rowr['name'];}?></th>
