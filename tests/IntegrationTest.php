@@ -7,7 +7,7 @@ use GuzzleHttp\Exception\ConnectException;
 class IntegrationTest extends TestCase
 {
     protected static $httpClient;
-    protected static $baseUrl = 'http://localhost:8080'; // Updated to match docker-compose.yml
+    protected static $baseUrl = 'http://localhost:8080'; // Updated to match podman-compose.yml
     protected static $skip = false;
 
     public static function setUpBeforeClass(): void

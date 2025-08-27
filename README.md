@@ -10,6 +10,18 @@ To test the service locally, run:
 php -S localhost:3000 index.php
 ```
 
+To start the full containerized stack, use Podman Compose:
+
+```sh
+podman compose up -d
+```
+
+When finished, stop the services with:
+
+```sh
+podman compose down
+```
+
 ## Configuration
 
 Copy `.env.example` to `.env` and provide values for the required environment variables. To enable email features, set `SENDINBLUE_API_KEY` with your Brevo (Sendinblue) API key.

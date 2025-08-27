@@ -1,4 +1,4 @@
-docker compose exec -T db mysql -u mbh -p'#yuCyTJ!FI=K' mbhdb -e "CREATE TABLE countries (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255) NOT NULL UNIQUE) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+podman compose exec -T db mysql -u mbh -p'#yuCyTJ!FI=K' mbhdb -e "CREATE TABLE countries (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255) NOT NULL UNIQUE) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 INSERT INTO `countries` (`name`) VALUES
 ('Afghanistan'), ('Albania'), ('Algeria'), ('Andorra'), ('Angola'), ('Antigua and Barbuda'), ('Argentina'), ('Armenia'), ('Australia'), ('Austria'),
 ('Azerbaijan'), ('Bahamas'), ('Bahrain'), ('Bangladesh'), ('Barbados'), ('Belarus'), ('Belgium'), ('Belize'), ('Benin'), ('Bhutan'),
