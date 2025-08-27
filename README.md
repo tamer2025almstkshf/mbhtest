@@ -34,3 +34,11 @@ composer config -g github-oauth.github.com your_token
 If you cannot provide credentials, mirror or replace those private dependencies with public equivalents so `composer install` works without special access.
 
 The tests use mocked database connections to avoid touching production data.
+
+## Cloud Run Build
+
+Build the container image for Cloud Run using Podman:
+
+```sh
+podman build -f cloud-run.Containerfile -t my-cloud-run-image .
+```
