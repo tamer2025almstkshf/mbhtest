@@ -5,8 +5,8 @@
     include_once 'errorscheck.php';
     
     $apiUrl = 'https://api.brevo.com/v3/smtp/email';
-    
-    $apiKey = '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';
+
+    $apiKey = getenv('SENDINBLUE_API_KEY');
     
     if(isset($_GET['id'])){
         $id = safe_output($_GET['id']);
@@ -27,14 +27,24 @@
         $participants = $rowe['participants'];
         
         $participantsArray = explode(",", $participants);
-        $message = "*`مكتب محمد بني هاشم للمحاماة و الاستشارات القانونية`*\n\n*تم كتابة محضر الاجتماع, يرجى الضغط على الرابط ادناه لمراجعة محتوى المحضر :*\nhttps://mbhtest.com/meeting_report.php?id=$meetingid&edit=1&rid=$id";
-        
-        foreach($participantsArray as $participantid){
+        foreach ($participantsArray as $participantid) {
+            $stmt = $conn->prepare("SELECT email FROM user WHERE id=?");
+            $stmt->bind_param("i", $participantid);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $row = $result->fetch_assoc();
+            $stmt->close();
+
+            $toEmail = safe_output($row['email'] ?? '');
+            if (empty($toEmail)) {
+                continue;
+            }
+
             $fromEmail = 'hashemh101@hotmail.com';
-            $toEmail = safe_output($rowr['email']);
-            $subject = safe_output($rowreq['subject']);
-            $htmlContent = '<p>مكتب محمد بني هاشم للمحاماة و الاستشارات القانونية<br><br>'.safe_output($rowreq['details']).'</p>';
-            
+            $subject = 'Meeting report';
+            $htmlContent = '<p>مكتب محمد بني هاشم للمحاماة و الاستشارات القانونية<br><br>تم كتابة محضر الاجتماع, يرجى الضغط على الرابط ادناه لمراجعة محتوى المحضر :</p>' .
+                '<p><a href="https://mbhtest.com/meeting_report.php?id=' . $meetingid . '&edit=1&rid=' . $id . '">عرض المحضر</a></p>';
+
             $ch = curl_init($apiUrl);
             curl_setopt($ch, CURLOPT_HTTPHEADER, [
                 'Content-Type: application/json',
@@ -48,19 +58,16 @@
                 'subject' => $subject,
                 'htmlContent' => $htmlContent,
             ]));
+
+            $response = curl_exec($ch);
+            if (curl_errno($ch)) {
+                curl_close($ch);
+                continue;
+            }
+            curl_close($ch);
         }
-        
-        $response = curl_exec($ch);
-        if (curl_errno($ch)) {
-            header("Location: meetings.php?error=0");
-            exit();
-            echo 'Error:' . curl_error($ch);
-        } else {
-            header("Location: meetings.php?mail=sent");
-            exit();
-            echo 'Response: ' . $response;
-        }
-        
-        curl_close($ch);
+
+        header("Location: meetings.php?mail=sent");
+        exit();
     }
 ?>

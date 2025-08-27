@@ -1,10 +1,11 @@
 <?php
     include_once 'connection.php';
     include_once 'login_check.php';
+    include_once 'safe_output.php';
     
     $apiUrl = 'https://api.brevo.com/v3/smtp/email';
-    
-    $apiKey = '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';
+
+    $apiKey = getenv('SENDINBLUE_API_KEY');
     
     if(isset($_GET['cid'])){
         $cid = safe_output($_GET['cid']);
