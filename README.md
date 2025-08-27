@@ -43,6 +43,16 @@ If you cannot provide credentials, mirror or replace those private dependencies 
 
 The tests use mocked database connections to avoid touching production data.
 
+## Container Utilities
+
+Use Podman to run commands inside the containers. For example, to create the `countries` table inside the `db` service:
+
+```sh
+podman compose exec -T db mysql -u mbh -p'#yuCyTJ!FI=K' mbhdb -e "CREATE TABLE countries (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255) NOT NULL UNIQUE) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+```
+
+This runs the command within the `db` container managed by Podman Compose.
+
 ## Cloud Run Build
 
 Build the container image for Cloud Run using Podman:
