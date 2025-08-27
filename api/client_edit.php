@@ -32,12 +32,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['client_id'])) {
     if ($stmt) {
         $stmt->bind_param(
             "ssssssssssi",
-            $_POST['arname'],
+            $arname,
             $_POST['engname'],
             $_POST['client_kind'],
             $_POST['client_type'],
             $_POST['country'],
-            $_POST['tel1'],
+            $tel1,
             $_POST['tel2'],
             $_POST['email'],
             $_POST['fax'],
