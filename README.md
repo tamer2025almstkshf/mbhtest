@@ -14,14 +14,6 @@ php -S localhost:3000 index.php
 
 Copy `.env.example` to `.env` and provide values for the required environment variables. To enable email features, set `SENDINBLUE_API_KEY` with your Brevo (Sendinblue) API key.
 
-## Container Image
-
-Build the container image with [Podman](https://podman.io/):
-
-```sh
-podman build -t app:latest -f Containerfile .
-```
-
 ## Testing
 
 Install Composer dependencies and run the PHPUnit test suite:
@@ -42,21 +34,3 @@ composer config -g github-oauth.github.com your_token
 If you cannot provide credentials, mirror or replace those private dependencies with public equivalents so `composer install` works without special access.
 
 The tests use mocked database connections to avoid touching production data.
-
-## Container Utilities
-
-Use Podman to run commands inside the containers. For example, to create the `countries` table inside the `db` service:
-
-```sh
-podman compose exec -T db mysql -u mbh -p'#yuCyTJ!FI=K' mbhdb -e "CREATE TABLE countries (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255) NOT NULL UNIQUE) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-```
-
-This runs the command within the `db` container managed by Podman Compose.
-
-## Cloud Run Build
-
-Build the container image for Cloud Run using Podman:
-
-```sh
-podman build -f cloud-run.Containerfile -t my-cloud-run-image .
-```
