@@ -14,6 +14,14 @@ php -S localhost:3000 index.php
 
 Copy `.env.example` to `.env` and provide values for the required environment variables. To enable email features, set `SENDINBLUE_API_KEY` with your Brevo (Sendinblue) API key.
 
+## Container Image
+
+Build the container image with [Podman](https://podman.io/):
+
+```sh
+podman build -t app:latest -f Containerfile .
+```
+
 ## Testing
 
 Install Composer dependencies and run the PHPUnit test suite:
