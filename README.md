@@ -70,3 +70,7 @@ composer config -g github-oauth.github.com your_token
 If you cannot provide credentials, mirror or replace those private dependencies with public equivalents so `composer install` works without special access.
 
 The tests use mocked database connections to avoid touching production data.
+
+## License
+
+This project is licensed under the MIT License with a limited one-year warranty. The warranty covers defects in materials and workmanship for one year from the date of delivery. Remedies are limited to repair or replacement, and liability is capped at the amount paid for the Software. See [LICENSE](LICENSE) for full terms.
