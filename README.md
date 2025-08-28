@@ -70,3 +70,7 @@ composer config -g github-oauth.github.com your_token
 If you cannot provide credentials, mirror or replace those private dependencies with public equivalents so `composer install` works without special access.
 
 The tests use mocked database connections to avoid touching production data.
+
+## Design System
+
+See [docs/design-system.md](docs/design-system.md) for guidelines on colors, typography, and reusable components that keep the user interface consistent.
