@@ -2,6 +2,16 @@
 
 This is a PHP API service starter based on [Google Cloud Run Quickstart](https://cloud.google.com/run/docs/quickstarts/build-and-deploy/deploy-php-service).
 
+## Table of Contents
+
+- [Installation](#installation)
+- [Usage](#usage)
+- [Features](#features)
+- [Technologies Used](#technologies-used)
+- [Contribution](#contribution)
+- [License](#license)
+- [Contact](#contact)
+
 ## Getting Started
 
 To test the service locally, run:
@@ -70,3 +80,35 @@ composer config -g github-oauth.github.com your_token
 If you cannot provide credentials, mirror or replace those private dependencies with public equivalents so `composer install` works without special access.
 
 The tests use mocked database connections to avoid touching production data.
+
+## Installation
+
+Clone the repository and install dependencies using Composer as shown in [Getting Started](#getting-started).
+
+## Usage
+
+After installation, start the development server with `php -S localhost:3000 index.php` or run the container via Podman.
+
+## Features
+
+- Starter structure for building PHP API services
+- Support for local development and containerized deployment
+
+## Technologies Used
+
+- PHP
+- Composer
+- Podman
+- PHPUnit
+
+## Contribution
+
+Contributions are welcome! Please open an issue or submit a pull request for improvements.
+
+## License
+
+This project does not yet specify a license.
+
+## Contact
+
+For questions or support, please open an issue on GitHub.
